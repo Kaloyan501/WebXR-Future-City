@@ -1,0 +1,35 @@
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -59,7 +59,8 @@
+   scene.add(plinth, floor);
+ 
+   const vr = new VrUI(content);
+-  vr.group.position.set(0, PLINTH_HEIGHT + 0.12, -VR_DISTANCE + 0.75);
++  // Control panel floats behind the model at about eye height, so nobody has to look down for it.
++  vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
+   scene.add(vr.group);
+ 
+   // Desktop camera.
+--- a/src/ui/cards-vr.ts
++++ b/src/ui/cards-vr.ts
+@@ -44,7 +44,8 @@
+ export class VrUI {
+   readonly group = new THREE.Group();
+ 
+-  private readonly toolbar = new THREE.Group();
++  /** Upright control panel; main.ts positions it. (The group itself stays at the origin so the card can use world coordinates.) */
++  readonly toolbar = new THREE.Group();
+   private readonly layerButtons = new Map<Layer, VrButton>();
+   private readonly scenarioButtons: VrButton[] = [];
+ 
+@@ -61,8 +62,8 @@
+   constructor(content: Content) {
+     this.group.visible = false;
+ 
+-    // Toolbar, tilted back so it reads like a control panel in front of the model.
+-    this.toolbar.rotation.x = -0.6;
++    // Upright panel, scaled up because it floats behind the model at roughly eye height.
++    this.toolbar.scale.setScalar(1.5);
+     this.group.add(this.toolbar);
+ 
+     const layers: [string, Layer][] = [

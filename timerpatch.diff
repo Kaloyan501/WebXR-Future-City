@@ -1,0 +1,18 @@
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -238,11 +238,12 @@
+   document.body.appendChild(VRButton.createButton(renderer));
+ 
+   // --- Render loop (setAnimationLoop is required for XR) ---
+-  const clock = new THREE.Clock();
++  const timer = new THREE.Timer();
+   const camPos = new THREE.Vector3();
+   const camQuat = new THREE.Quaternion();
+-  renderer.setAnimationLoop(() => {
+-    const dt = Math.min(clock.getDelta(), 0.1);
++  renderer.setAnimationLoop((time) => {
++    timer.update(time);
++    const dt = Math.min(timer.getDelta(), 0.1);
+     if (!renderer.xr.isPresenting) controls.update();
+     const viewCamera = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+     viewCamera.getWorldPosition(camPos);

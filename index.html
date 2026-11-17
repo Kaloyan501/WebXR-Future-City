@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Climate City 2126</title>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <header id="hud">
+      <h1 id="title"></h1>
+      <p id="site"></p>
+    </header>
+
+    <nav id="layers" aria-label="Layers">
+      <button data-layer="all" class="active">All</button>
+      <button data-layer="geo">Geography</button>
+      <button data-layer="bio">Biology</button>
+    </nav>
+
+    <div id="scenario">
+      <label for="scenario-range">Scenario: <strong id="scenario-label"></strong></label>
+      <input id="scenario-range" type="range" min="0" max="2" step="1" value="0" />
+    </div>
+
+    <aside id="card" hidden>
+      <button id="card-close" aria-label="Close">&times;</button>
+      <div id="card-tags"></div>
+      <h2 id="card-title"></h2>
+      <p id="card-summary"></p>
+      <p id="card-details"></p>
+    </aside>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

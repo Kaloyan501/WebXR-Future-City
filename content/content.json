@@ -1,0 +1,62 @@
+{
+  "site": {
+    "title": "Climate City 2126",
+    "location": "Bulgaria, Black Sea coast (placeholder site, to be decided by the group)",
+    "note": "All text below is a draft. Verify facts and add sources before the demo."
+  },
+  "scenarios": [
+    { "label": "Today", "year": 2026, "waterLevel": 0.3 },
+    { "label": "+50 years", "year": 2076, "waterLevel": 0.6 },
+    { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
+  ],
+  "pins": [
+    {
+      "id": 1,
+      "title": "Nuclear energy hub",
+      "tags": ["geo"],
+      "position": [-9, -8],
+      "summary": "Steady baseload power for a hotter world. The adaptation question is cooling: reactors need a lot of water, and droughts and warmer water shrink the safety margin.",
+      "details": "Real-world reference: Kozloduy, Bulgaria's only nuclear plant, sits on the Danube. Discuss river versus sea-water cooling, flood-proofing the site, and why storage and renewables are still needed. TODO: add current figures and sources."
+    },
+    {
+      "id": 2,
+      "title": "Drought-tolerant crop farms",
+      "tags": ["bio"],
+      "position": [-8, 7],
+      "summary": "Fields of heat- and drought-tolerant crop varieties, some of them gene-edited. They show how plant biology can cut the water needed per kilogram of food.",
+      "details": "Discuss: how EU rules treat gene-edited plants, Bulgaria's traditionally cautious public view of GMOs, and the risks (less genetic diversity, seed dependence). TODO: verify the current EU regulation status and cite it."
+    },
+    {
+      "id": 3,
+      "title": "Coastal wetland buffer",
+      "tags": ["geo", "bio"],
+      "position": [7.5, -4],
+      "summary": "A restored lagoon belt that soaks up storm surge and gives migrating birds a place to rest. A natural flood defence that doubles as habitat.",
+      "details": "Reference: the lakes around Burgas, on a major bird migration route along the Black Sea. Move the slider to +100 years and watch the wetland shift inland. TODO: add species and numbers."
+    },
+    {
+      "id": 4,
+      "title": "Sponge district",
+      "tags": ["geo"],
+      "position": [-1, 0],
+      "summary": "Permeable paving, green roofs and retention basins that hold cloudburst water instead of sending it down the street.",
+      "details": "Discuss: flash floods, where the water is stored, and reusing it for irrigation in dry spells. TODO: pick one Bulgarian flood event as the case study."
+    },
+    {
+      "id": 5,
+      "title": "Elevated waterfront",
+      "tags": ["geo"],
+      "position": [8, 6],
+      "summary": "The lowest districts are raised or turned into flood-tolerant public space. Everything critical sits above the +100 year water line.",
+      "details": "Use the scenario slider to show why. Discuss managed retreat versus defending the coastline, and what each costs."
+    },
+    {
+      "id": 6,
+      "title": "Cooling green corridors",
+      "tags": ["bio"],
+      "position": [1, -7],
+      "summary": "Tree-lined streets and wind corridors that lower street temperatures during heatwaves, planted with heat- and drought-tolerant species.",
+      "details": "Discuss: the urban heat island effect, native versus imported species, and biodiversity benefits. TODO: choose species that suit Bulgaria's climate."
+    }
+  ]
+}

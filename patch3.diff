@@ -1,0 +1,109 @@
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -15,6 +15,12 @@
+ const VR_SCALE = 0.04;
+ const PLINTH_HEIGHT = 0.85;
+ const VR_DISTANCE = 1.3;
++// Right thumbstick: left/right rotates the model, up/down zooms it.
++const VR_MIN_SCALE = 0.02; // ~0.5 m wide
++const VR_MAX_SCALE = 0.06; // ~1.5 m wide
++const STICK_DEADZONE = 0.15;
++const ROTATE_SPEED = 1.6; // rad/s at full deflection
++const ZOOM_SPEED = 0.9; // e-folds/s at full deflection
+ 
+ // --- Desktop isometric camera ---
+ const ISO_POLAR = Math.atan(Math.SQRT2); // true isometric elevation (~54.7 deg from vertical)
+@@ -223,12 +229,14 @@
+   }
+ 
+   renderer.xr.addEventListener('sessionstart', () => {
++    world.rotation.y = 0;
+     world.scale.setScalar(VR_SCALE);
+     world.position.set(0, PLINTH_HEIGHT, -VR_DISTANCE);
+     plinth.visible = floor.visible = vr.group.visible = true;
+     selectPin(null);
+   });
+   renderer.xr.addEventListener('sessionend', () => {
++    world.rotation.y = 0;
+     world.scale.setScalar(1);
+     world.position.set(0, 0, 0);
+     plinth.visible = floor.visible = vr.group.visible = false;
+@@ -242,10 +250,33 @@
+   const timer = new THREE.Timer();
+   const camPos = new THREE.Vector3();
+   const camQuat = new THREE.Quaternion();
++  const pinPos = new THREE.Vector3();
++
++  // Right thumbstick (xr-standard axes 2 and 3): rotate and zoom the table-top model.
++  const applyStick = (dt: number): void => {
++    const session = renderer.xr.getSession();
++    if (!session) return;
++    const dead = (v: number): number => (Math.abs(v) < STICK_DEADZONE ? 0 : v);
++    for (const src of session.inputSources) {
++      if (src.handedness !== 'right' || !src.gamepad) continue;
++      const x = dead(src.gamepad.axes[2] ?? 0);
++      const y = dead(src.gamepad.axes[3] ?? 0);
++      world.rotation.y -= x * ROTATE_SPEED * dt;
++      const s = world.scale.x * Math.exp(-y * ZOOM_SPEED * dt); // stick up is negative y
++      world.scale.setScalar(THREE.MathUtils.clamp(s, VR_MIN_SCALE, VR_MAX_SCALE));
++    }
++  };
++
+   renderer.setAnimationLoop((time) => {
+     timer.update(time);
+     const dt = Math.min(timer.getDelta(), 0.1);
+-    if (!renderer.xr.isPresenting) controls.update();
++    if (renderer.xr.isPresenting) {
++      applyStick(dt);
++      const open = selectedId === null ? undefined : pins.byId(selectedId);
++      if (open) vr.moveCard(open.head.getWorldPosition(pinPos));
++    } else {
++      controls.update();
++    }
+     const viewCamera = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+     viewCamera.getWorldPosition(camPos);
+     viewCamera.getWorldQuaternion(camQuat);
+--- a/src/ui/cards-vr.ts
++++ b/src/ui/cards-vr.ts
+@@ -147,11 +147,15 @@
+     this.pin = pin;
+     this.showingDetails = false;
+     this.refreshCard();
+-    // Float above the pin, a little closer to the viewer's eye height.
+-    this.card.position.copy(worldPos).add(new THREE.Vector3(0, 0.3, 0));
++    this.moveCard(worldPos);
+     this.card.visible = true;
+   }
+ 
++  /** Float the card 30 cm above a pin. Called every frame because the model can be rotated or scaled while a card is open. */
++  moveCard(worldPos: THREE.Vector3): void {
++    this.card.position.copy(worldPos).add(new THREE.Vector3(0, 0.3, 0));
++  }
++
+   hideCard(): void {
+     this.pin = null;
+     this.card.visible = false;
+--- a/src/scene/pins.ts
++++ b/src/scene/pins.ts
+@@ -29,6 +29,7 @@
+ export function createPins(pins: Pin[]): Pins {
+   const group = new THREE.Group();
+   group.name = 'pins';
++  const parentQ = new THREE.Quaternion();
+ 
+   const headGeo = new THREE.SphereGeometry(0.55, 24, 16);
+   const stemGeo = new THREE.CylinderGeometry(0.06, 0.06, 1, 8);
+@@ -101,8 +102,11 @@
+       }
+     },
+     billboard(q) {
+-      // Pins sit under unrotated parents, so copying the camera rotation is enough.
+-      for (const it of items) it.label.quaternion.copy(q);
++      // The model can be rotated in VR, so convert the camera rotation into each label's parent space.
++      for (const it of items) {
++        it.group.getWorldQuaternion(parentQ).invert();
++        it.label.quaternion.copy(parentQ).multiply(q);
++      }
+     },
+   };
+ }
