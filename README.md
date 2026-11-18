@@ -36,7 +36,34 @@ Delete the template leftovers: `src/counter.ts`, `src/assets/`.
 - Pin positions are tile coordinates, x and z in [-12, 12]. Pin numbers match the numbering planned for the 3D print.
 - VR scale: the plate is scaled to about 1 m (`VR_SCALE` in `main.ts`) and placed on a table-height plinth.
 - 3D text uses the bundled `public/fonts/LiberationSans-Regular.ttf` (SIL OFL, covers Latin and Cyrillic) so it works offline. Controller and hand models are still fetched from a CDN at runtime; without internet you get the pointer ray only.
-- Replacing the placeholder city: export a GLB from Blender, then
-  `npx gltf-transform optimize assets-src/city.glb public/models/city.glb --compress meshopt`
-  and load it with `GLTFLoader` + `MeshoptDecoder` in place of `buildCity`. Keep `groundHeight()` in sync with your model so pins sit on the ground.
 - All card text is draft. Verify facts and add sources before the demo.
+
+## Placing 3D models on tiles
+
+Models are GLB files in `public/models/`, listed under `placements` in `content/content.json`:
+
+```json
+"placements": [
+  { "model": "models/house.glb", "tile": [10, 12] },
+  { "model": "models/tower.glb", "tile": [4, 4], "rotation": 90, "scale": 1.2 },
+  { "model": "models/park.glb",  "tile": [14, 6], "span": [2, 2] }
+]
+```
+
+- `tile` is `[col, row]`, 0-based. In the isometric view `[0, 0]` is the top corner of the plate, `col` grows towards the lower right (the sea) and `row` towards the lower left. A pin at world `[x, z]` sits on tile `[floor(x + GRID/2), floor(z + GRID/2)]`, so existing pins are handy landmarks.
+- Every model is scaled to fit inside its footprint (`span`, default 1x1 tile), keeping its proportions, centred on the footprint and standing on the terrain. Model origin and units do not matter. Export with +Y up.
+- `rotation` is degrees about the vertical axis and is applied before fitting, so 90 swaps the footprint's width and depth.
+- `scale` multiplies the fitted size (above 1 overflows the tile). `offsetY` lifts the model.
+- Tiles covered by a model get no procedural building or tree. Roads stay, and the model stands on them.
+- A multi-tile model stands on the highest terrain tile under its footprint.
+- A model that is missing, broken or outside the grid is skipped with a console warning; the rest still load.
+- Compress for the Quest: `npx gltf-transform optimize in.glb public/models/out.glb --compress meshopt --texture-compress webp` (meshopt is decoded automatically).
+
+## Changing the grid size
+
+`GRID` in `src/scene/city.ts` is the only number to change. The VR scale and zoom limits and the desktop camera framing in `main.ts` are derived from it, and tile maths goes through `tileToWorld`. Still hand-tuned for 24, so check them after changing it:
+
+- `terrainHeight()` in `city.ts`: the coastline is fixed at x = 5, so a much smaller plate loses its beach and sea.
+- Roads are every 4th row and column (`i % 4`, `j % 4` in `buildCity`).
+- Pin `position`s in `content.json` are world units, so they do not move with the grid. Keep them within +-GRID/2.
+- The desktop camera sits at (40, 40, 40) with a far plane of 300. That is fine up to about GRID = 48. Beyond that, move it back.

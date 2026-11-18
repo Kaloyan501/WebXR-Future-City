@@ -5,26 +5,27 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import './style.css';
 import { content, type Layer } from './content';
-import { buildCity } from './scene/city';
+import { GRID, buildCity } from './scene/city';
+import { loadPlacements, occupiedTiles } from './scene/models';
 import { createPins } from './scene/pins';
 import { initDomUI } from './ui/cards-dom';
 import { VrUI, type VrAction } from './ui/cards-vr';
 import { installEmulatorIfNeeded } from './xr/emulator';
 
 // --- VR placement: the 24-tile plate becomes a ~1 m model on a table-height plinth ---
-const VR_SCALE = 0.04;
+const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
 const PLINTH_HEIGHT = 0.85;
 const VR_DISTANCE = 1.3;
 // Right thumbstick: left/right rotates the model, up/down zooms it.
-const VR_MIN_SCALE = 0.02; // ~0.5 m wide
-const VR_MAX_SCALE = 0.06; // ~1.5 m wide
+const VR_MIN_SCALE = 0.5 / GRID; // ~0.5 m wide
+const VR_MAX_SCALE = 1.5 / GRID; // ~1.5 m wide
 const STICK_DEADZONE = 0.15;
 const ROTATE_SPEED = 1.6; // rad/s at full deflection
 const ZOOM_SPEED = 0.9; // e-folds/s at full deflection
 
 // --- Desktop isometric camera ---
 const ISO_POLAR = Math.atan(Math.SQRT2); // true isometric elevation (~54.7 deg from vertical)
-const VIEW_HALF_HEIGHT = 13;
+const VIEW_HALF_HEIGHT = GRID * 0.54;
 
 async function main(): Promise<void> {
   // Must run before VRButton is created so it sees the emulated XR support.
@@ -46,9 +47,12 @@ async function main(): Promise<void> {
   // Everything that belongs to the model lives in `world`, which is scaled in VR.
   const world = new THREE.Group();
   scene.add(world);
-  const city = buildCity(content.scenarios[0].waterLevel);
+  const city = buildCity(content.scenarios[0].waterLevel, occupiedTiles(content.placements));
   const pins = createPins(content.pins);
   world.add(city.group, pins.group);
+  //world.add(pins.group);
+  // Models load in the background, so a slow or missing file never blocks the UI.
+  void loadPlacements(content.placements).then((models) => world.add(models));
 
   // VR-only props: plinth, floor disc and in-scene UI.
   const plinth = new THREE.Mesh(
@@ -87,7 +91,7 @@ async function main(): Promise<void> {
     renderer.setSize(w, h, false);
     const aspect = w / h;
     // Keep the whole plate visible on narrow (portrait) screens too.
-    const halfH = Math.max(VIEW_HALF_HEIGHT, 19 / aspect);
+    const halfH = Math.max(VIEW_HALF_HEIGHT, (GRID * 0.8) / aspect);
     camera.left = -halfH * aspect;
     camera.right = halfH * aspect;
     camera.top = halfH;

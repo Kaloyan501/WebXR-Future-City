@@ -9,6 +9,10 @@
     { "label": "+50 years", "year": 2076, "waterLevel": 0.6 },
     { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
   ],
+  "placements": [
+    { "model": "models/test.glb", "tile": [0.5, 0.5], "scale": 5},
+    { "model": "models/p1.glb", "tile": [5, 5], "scale": 5}
+  ],
   "pins": [
     {
       "id": 1,

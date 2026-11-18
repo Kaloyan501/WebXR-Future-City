@@ -14,6 +14,26 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/** Each tile gets its own random stream, so occupying one tile never reshuffles the others. */
+function tileRandom(col: number, row: number): () => number {
+  return mulberry32((col * 73856093) ^ (row * 19349663) ^ 2126);
+}
+
+/** Key for a tile in sets and maps. `col` runs along +x, `row` along +z, both 0..GRID-1. */
+export const tileKey = (col: number, row: number): string => `${col},${row}`;
+
+/** World x/z of a tile's centre. */
+export function tileToWorld(col: number, row: number): [number, number] {
+  return [col - HALF + 0.5, row - HALF + 0.5];
+}
+
+interface Spot {
+  x: number;
+  z: number;
+  h: number;
+  rand: () => number;
+}
+
 /** Placeholder terrain: high inland plateau (west) falling steeply into the sea (east). */
 export function terrainHeight(x: number, z: number): number {
   const inland = 2.0 - 0.047 * (x + HALF); // x=-12 -> 2.0, x=5 -> 1.2
@@ -33,10 +53,13 @@ export interface City {
   update(dt: number): void;
 }
 
-export function buildCity(initialWaterLevel: number): City {
+/**
+ * @param occupied tiles (see `tileKey`) covered by placed models; no procedural
+ * building or tree is generated on them.
+ */
+export function buildCity(initialWaterLevel: number, occupied: ReadonlySet<string> = new Set()): City {
   const group = new THREE.Group();
   group.name = 'city';
-  const rng = mulberry32(2126);
   const dummy = new THREE.Object3D();
   const color = new THREE.Color();
 
@@ -54,14 +77,13 @@ export function buildCity(initialWaterLevel: number): City {
     new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95 }),
     GRID * GRID,
   );
-  const buildingSpots: { x: number; z: number; h: number }[] = [];
-  const treeSpots: { x: number; z: number; h: number }[] = [];
+  const buildingSpots: Spot[] = [];
+  const treeSpots: Spot[] = [];
 
   let n = 0;
   for (let i = 0; i < GRID; i++) {
     for (let j = 0; j < GRID; j++) {
-      const x = i - HALF + 0.5;
-      const z = j - HALF + 0.5;
+      const [x, z] = tileToWorld(i, j);
       const h = terrainHeight(x, z);
       const isLand = h > 0.4;
       const isRoad = isLand && (i % 4 === 0 || j % 4 === 0);
@@ -79,15 +101,16 @@ export function buildCity(initialWaterLevel: number): City {
       tiles.setColorAt(n, color);
       n++;
 
-      if (isLand && !isRoad) {
-        const r = rng();
-        if (r < 0.55) buildingSpots.push({ x, z, h });
-        else if (r < 0.8) treeSpots.push({ x, z, h });
+      if (isLand && !isRoad && !occupied.has(tileKey(i, j))) {
+        const rand = tileRandom(i, j);
+        const r = rand();
+        if (r < 0.55) buildingSpots.push({ x, z, h, rand });
+        else if (r < 0.8) treeSpots.push({ x, z, h, rand });
       }
     }
   }
   tiles.instanceColor!.needsUpdate = true;
-  group.add(tiles);
+  //group.add(tiles);
 
   // Buildings: taller toward the middle of the plate.
   const palette = [0xe6e2d8, 0xd5d9de, 0xc9b8a6, 0xf0ece4, 0xb8c4cf];
@@ -98,16 +121,16 @@ export function buildCity(initialWaterLevel: number): City {
   );
   buildingSpots.forEach((s, k) => {
     const centre = 1 - Math.min(Math.hypot(s.x, s.z) / HALF, 1);
-    const bh = 0.3 + rng() * 0.5 + centre * 0.9;
-    const w = 0.55 + rng() * 0.25;
+    const bh = 0.3 + s.rand() * 0.5 + centre * 0.9;
+    const w = 0.55 + s.rand() * 0.25;
     dummy.position.set(s.x, s.h + bh / 2, s.z);
     dummy.scale.set(w, bh, w);
     dummy.updateMatrix();
     buildings.setMatrixAt(k, dummy.matrix);
-    buildings.setColorAt(k, color.setHex(palette[Math.floor(rng() * palette.length)]));
+    buildings.setColorAt(k, color.setHex(palette[Math.floor(s.rand() * palette.length)]));
   });
   buildings.instanceColor!.needsUpdate = true;
-  group.add(buildings);
+  //group.add(buildings);
 
   // Trees: simple cones.
   const trees = new THREE.InstancedMesh(
@@ -116,13 +139,13 @@ export function buildCity(initialWaterLevel: number): City {
     treeSpots.length,
   );
   treeSpots.forEach((s, k) => {
-    const sc = 0.8 + rng() * 0.6;
-    dummy.position.set(s.x + (rng() - 0.5) * 0.3, s.h + 0.35 * sc, s.z + (rng() - 0.5) * 0.3);
+    const sc = 0.8 + s.rand() * 0.6;
+    dummy.position.set(s.x + (s.rand() - 0.5) * 0.3, s.h + 0.35 * sc, s.z + (s.rand() - 0.5) * 0.3);
     dummy.scale.set(sc, sc, sc);
     dummy.updateMatrix();
     trees.setMatrixAt(k, dummy.matrix);
   });
-  group.add(trees);
+  //group.add(trees);
 
   // Water plane; its height is driven by the scenario slider.
   const water = new THREE.Mesh(
@@ -137,7 +160,7 @@ export function buildCity(initialWaterLevel: number): City {
   );
   water.renderOrder = 5;
   water.position.y = initialWaterLevel;
-  group.add(water);
+  //group.add(water);
 
   let target = initialWaterLevel;
 
