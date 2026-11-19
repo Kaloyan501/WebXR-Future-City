@@ -68,7 +68,7 @@ export function buildCity(initialWaterLevel: number, occupied: ReadonlySet<strin
     new THREE.BoxGeometry(GRID + 0.6, 0.6, GRID + 0.6),
     new THREE.MeshStandardMaterial({ color: 0x2b323c, roughness: 0.9 }),
   );
-  slab.position.y = -0.3;
+  slab.position.y = 2;
   group.add(slab);
 
   // Terrain tiles (also roads).
