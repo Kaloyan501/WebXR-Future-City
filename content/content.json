@@ -10,10 +10,10 @@
     { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
   ],
   "placements": [
-    { "model": "models/nuclear.glb", "tile": [1.5, 1.5], "scale": 5},
-    { "model": "models/nuclear.glb", "tile": [6.5, 6.5], "scale": 5},
-    { "model": "models/nuclear.glb", "tile": [11.5, 11.5], "scale": 5},
-    { "model": "models/nuclear.glb", "tile": [16.5, 16.5], "scale": 5}
+    { "model": "models/nuclear.glb", "tile": [1.5, 1.5], "scale": 1},
+    { "model": "models/nuclear.glb", "tile": [6.5, 6.5], "scale": 1},
+    { "model": "models/nuclear.glb", "tile": [11.5, 11.5], "scale": 1},
+    { "model": "models/nuclear.glb", "tile": [16.5, 16.5], "scale": 1}
   ],
   "pins": [
     {
