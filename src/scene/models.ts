@@ -65,7 +65,7 @@ async function place(p: Placement): Promise<THREE.Object3D> {
   const fit = (Number.isFinite(Math.min(fitX, fitZ)) ? Math.min(fitX, fitZ) : 1) * (p.scale ?? 1);
 
   // Stand on the highest tile under the footprint so the model never sinks into the terrain.
-  let ground = 0;
+  let ground = 5;
   /*for (let i = 0; i < w; i++) {
     for (let j = 0; j < d; j++) {
       const [tx, tz] = tileToWorld(col + i, row + j);
