@@ -10,7 +10,7 @@
     { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
   ],
   "placements": [
-    { "model": "models/nuclear.glb", "tile": [3, 3], "scale": 5}
+    { "model": "models/nuclear.glb", "tile": [0, 0], "scale": 5}
   ],
   "pins": [
     {
