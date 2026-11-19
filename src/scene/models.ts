@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import type { Placement } from '../content';
-import { GRID, terrainHeight, tileKey, tileToWorld } from './city';
+import { GRID, tileKey, tileToWorld } from './city';
 
 // GLBs exported with `gltf-transform ... --compress meshopt` need the decoder.
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
