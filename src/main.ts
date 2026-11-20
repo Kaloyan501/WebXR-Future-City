@@ -255,9 +255,19 @@ async function main(): Promise<void> {
   });
 
   const arButton = ARButton.createButton(renderer, { optionalFeatures: ['hit-test', 'anchors', 'local-floor'] });
-  arButton.style.left = 'calc(50% + 70px)';
-  document.body.appendChild(arButton);
-  document.body.appendChild(VRButton.createButton(renderer));
+  const vrButton = VRButton.createButton(renderer);
+  // three.js restyles its buttons asynchronously (after isSessionSupported resolves), which
+  // overwrites inline `left`. Lay them out with a flex container and static positioning instead.
+  const xrBar = document.createElement('div');
+  xrBar.id = 'xr-bar';
+  xrBar.style.cssText =
+    'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:999';
+  for (const b of [vrButton, arButton]) {
+    b.style.setProperty('position', 'static', 'important');
+    b.style.setProperty('left', 'auto', 'important');
+    xrBar.appendChild(b);
+  }
+  document.body.appendChild(xrBar);
 
   // --- Render loop (setAnimationLoop is required for XR) ---
   const timer = new THREE.Timer();
