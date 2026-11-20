@@ -239,12 +239,14 @@ async function main(): Promise<void> {
     world.scale.setScalar(VR_SCALE);
     world.position.set(0, PLINTH_HEIGHT, -VR_DISTANCE);
     const ar = renderer.xr.getSession()!.environmentBlendMode !== 'opaque';
-    // The plate sits at table height, so keep the plinth under it in AR too; only the
-    // floor disc is VR-only (it would cover the real floor).
     plinth.visible = true;
     floor.visible = !ar;
     vr.group.visible = true;
     selectPin(null);
+
+  
+    const base = renderer.xr.getReferenceSpace() as XRReferenceSpace | null;
+    if (base) renderer.xr.setReferenceSpace(base.getOffsetReferenceSpace(new XRRigidTransform({ x: 0, y: -1.6, z: 0 })));
   });
   renderer.xr.addEventListener('sessionend', () => {
     xrLogged = false;
