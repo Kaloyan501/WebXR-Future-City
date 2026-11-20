@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { ARButton } from 'three/addons/webxr/ARButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import './style.css';
@@ -38,7 +39,8 @@ async function main(): Promise<void> {
   renderer.xr.setReferenceSpaceType('local-floor');
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x10151c);
+  scene.background = null;
+  renderer.setClearColor(0x000000, 0);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
   const sun = new THREE.DirectionalLight(0xffffff, 1.8);
   sun.position.set(10, 20, 8);
@@ -236,7 +238,11 @@ async function main(): Promise<void> {
     world.rotation.y = 0;
     world.scale.setScalar(VR_SCALE);
     world.position.set(0, PLINTH_HEIGHT, -VR_DISTANCE);
-    plinth.visible = floor.visible = vr.group.visible = true;
+    //UNCOMMENT THIS IF AR TEST BLOWS UP
+    //plinth.visible = floor.visible = vr.group.visible = true;
+    const ar = renderer.xr.getSession()!.environmentBlendMode !== 'opaque';
+    plinth.visible = floor.visible = !ar;
+    vr.group.visible = true;
     selectPin(null);
   });
   renderer.xr.addEventListener('sessionend', () => {
@@ -248,6 +254,9 @@ async function main(): Promise<void> {
     resize();
   });
 
+  const arButton = ARButton.createButton(renderer, { optionalFeatures: ['hit-test', 'anchors', 'local-floor'] });
+  arButton.style.left = 'calc(50% + 70px)';
+  document.body.appendChild(arButton);
   document.body.appendChild(VRButton.createButton(renderer));
 
   // --- Render loop (setAnimationLoop is required for XR) ---
