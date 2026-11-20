@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   await installEmulatorIfNeeded();
 
   const canvas = document.querySelector<HTMLCanvasElement>('#scene')!;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local-floor');
