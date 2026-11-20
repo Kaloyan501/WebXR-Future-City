@@ -1,0 +1,19 @@
+diff --git a/src/main.ts b/src/main.ts
+index cafbbaa..8035d74 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -238,10 +238,11 @@ async function main(): Promise<void> {
+     world.rotation.y = 0;
+     world.scale.setScalar(VR_SCALE);
+     world.position.set(0, PLINTH_HEIGHT, -VR_DISTANCE);
+-    //UNCOMMENT THIS IF AR TEST BLOWS UP
+-    //plinth.visible = floor.visible = vr.group.visible = true;
+     const ar = renderer.xr.getSession()!.environmentBlendMode !== 'opaque';
+-    plinth.visible = floor.visible = !ar;
++    // The plate sits at table height, so keep the plinth under it in AR too; only the
++    // floor disc is VR-only (it would cover the real floor).
++    plinth.visible = true;
++    floor.visible = !ar;
+     vr.group.visible = true;
+     selectPin(null);
+   });
