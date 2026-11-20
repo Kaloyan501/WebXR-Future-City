@@ -248,6 +248,7 @@ async function main(): Promise<void> {
   });
   renderer.xr.addEventListener('sessionend', () => {
     xrLogged = false;
+    xrFrames = 0;
     world.rotation.y = 0;
     world.scale.setScalar(1);
     world.position.set(0, 0, 0);
@@ -277,6 +278,7 @@ async function main(): Promise<void> {
   const camQuat = new THREE.Quaternion();
   const pinPos = new THREE.Vector3();
   let xrLogged = false;
+  let xrFrames = 0;
 
   // Right thumbstick (xr-standard axes 2 and 3): rotate and zoom the table-top model.
   const applyStick = (dt: number): void => {
@@ -306,10 +308,10 @@ async function main(): Promise<void> {
     const viewCamera = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
     viewCamera.getWorldPosition(camPos);
     viewCamera.getWorldQuaternion(camQuat);
-    if (renderer.xr.isPresenting && !xrLogged) {
+    // The XR camera pose only updates after the first render, so wait a few frames before reading it.
+    if (renderer.xr.isPresenting && !xrLogged && ++xrFrames > 30) {
       xrLogged = true;
-      const sess = renderer.xr.getSession()!;
-      console.info('[xr] head y:', camPos.y.toFixed(2), 'features:', sess.enabledFeatures?.join(','));
+      console.info('[xr] head y:', camPos.y.toFixed(2), 'plate y:', world.position.y.toFixed(2), 'plinth:', plinth.visible);
     }
     city.update(dt);
     pins.billboard(camQuat);
