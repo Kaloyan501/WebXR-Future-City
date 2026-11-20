@@ -1,23 +1,28 @@
 /**
- * Dev-only WebXR emulator (IWER + DevUI). Only installs when the browser has no real
- * immersive-vr support, so it stays out of the way on the Quest and when the
- * Immersive Web Emulator extension is already active. Stripped from production builds.
+ * WebXR emulator (IWER + DevUI).
+ * Enabled automatically in development or explicitly with ?emulateXR=1.
  */
 export async function installEmulatorIfNeeded(): Promise<void> {
-  if (import.meta.env.DEV) {
-    const supported = navigator.xr
-      ? await navigator.xr.isSessionSupported('immersive-vr').catch(() => false)
-      : false;
-    if (supported) return;
+  const requested =
+  import.meta.env.DEV ||
+  new URLSearchParams(window.location.search).get('emulateXR') === '1';
 
-    const { XRDevice, metaQuest3 } = await import('iwer');
-    const { DevUI } = await import('@iwer/devui');
-    const device = new XRDevice(metaQuest3);
-    // Chrome exposes navigator.xr even without a headset, so IWER must be forced to install.
-    device.installRuntime({ forceInstall: true });
-    // installDevUI mounts the control panel and drives it every frame; `new DevUI(device)`
-    // alone only shows the "Enter XR" pill.
-    device.installDevUI(DevUI);
-    console.info('[xr] IWER emulator installed (Meta Quest 3 preset)');
-  }
+  if (!requested) return;
+
+  const supported = navigator.xr
+  ? await navigator.xr.isSessionSupported('immersive-vr').catch(() => false)
+  : false;
+
+  // Never override a real VR implementation.
+  if (supported) return;
+
+  const { XRDevice, metaQuest3 } = await import('iwer');
+  const { DevUI } = await import('@iwer/devui');
+
+  const device = new XRDevice(metaQuest3);
+
+  device.installRuntime({ forceInstall: true });
+  device.installDevUI(DevUI);
+
+  console.info('[xr] IWER emulator installed');
 }
