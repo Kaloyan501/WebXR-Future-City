@@ -25,18 +25,20 @@ export async function installEmulatorIfNeeded(): Promise<void> {
 
   const device = new XRDevice(metaQuest3);
 
-  // Install the emulated WebXR runtime.
   device.installRuntime({ forceInstall: true });
-
-  // Install synthetic environment support.
-  const sem = new SyntheticEnvironmentModule();
-  device.installSyntheticEnvironmentModule(sem);
-
-  // Load a built-in room.
-  await device.sem.loadDefaultEnvironment('sunlit_living_room');
-
-  // Install emulator controls.
   device.installDevUI(DevUI);
 
-  console.info('[xr] IWER + synthetic environment installed');
+  // Install SEM using the new API.
+  device.installSEM(SyntheticEnvironmentModule);
+
+  // The SEM property is optional in the TypeScript definitions.
+  const sem = device.sem;
+
+  if (!sem) {
+    throw new Error('[xr] Failed to initialize Synthetic Environment Module');
+  }
+
+  await sem.loadDefaultEnvironment('sunlit_living_room');
+
+  console.info('[xr] IWER + SEM environment installed');
 }
