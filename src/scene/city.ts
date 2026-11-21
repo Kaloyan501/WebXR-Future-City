@@ -27,6 +27,18 @@ export function tileToWorld(col: number, row: number): [number, number] {
   return [col - HALF + 0.5, row - HALF + 0.5];
 }
 
+/** Placed models use a coarser grid: PLACE_GRID x PLACE_GRID cells across the plate. */
+export const PLACE_GRID = 11;
+/** World size of one placement cell, i.e. of a model at scale 1. */
+export const CELL = GRID / PLACE_GRID;
+/** Placement cells run from -PLACE_HALF to PLACE_HALF on each axis; [0, 0] is the centre of the plate. */
+export const PLACE_HALF = Math.floor(PLACE_GRID / 2);
+
+/** World x/z of a placement cell's centre. */
+export function cellToWorld(cx: number, cz: number): [number, number] {
+  return [cx * CELL, cz * CELL];
+}
+
 interface Spot {
   x: number;
   z: number;

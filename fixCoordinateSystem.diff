@@ -1,0 +1,123 @@
+diff --git a/content/content.json b/content/content.json
+index e311924..9152355 100644
+--- a/content/content.json
++++ b/content/content.json
+@@ -12,15 +12,14 @@
+   "placements": [
+-    { "model": "models/nuclear.glb", "tile": [2, 2], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [4, 4], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [6, 6], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [8, 8], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [10, 10], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [12, 12], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [14, 14], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [16, 16], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [18, 18], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [20, 20], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [22, 22], "scale": 2 },
+-    { "model": "models/nuclear.glb", "tile": [24, 24], "scale": 2 }
+-],
++    { "model": "models/nuclear.glb", "tile": [-5, -5] },
++    { "model": "models/nuclear.glb", "tile": [-4, -4] },
++    { "model": "models/nuclear.glb", "tile": [-3, -3] },
++    { "model": "models/nuclear.glb", "tile": [-2, -2] },
++    { "model": "models/nuclear.glb", "tile": [-1, -1] },
++    { "model": "models/nuclear.glb", "tile": [0, 0] },
++    { "model": "models/nuclear.glb", "tile": [1, 1] },
++    { "model": "models/nuclear.glb", "tile": [2, 2] },
++    { "model": "models/nuclear.glb", "tile": [3, 3] },
++    { "model": "models/nuclear.glb", "tile": [4, 4] },
++    { "model": "models/nuclear.glb", "tile": [5, 5] }
++  ],
+   "pins": [
+diff --git a/src/content.ts b/src/content.ts
+index a05ea89..57d21c3 100644
+--- a/src/content.ts
++++ b/src/content.ts
+@@ -27,5 +27,5 @@ export interface Placement {
+   model: string;
+-  /** [col, row], 0-based. Col runs along +x, row along +z. For multi-tile models, the lowest-index corner. */
++  /** Placement cell [x, z] counted from the centre of the plate: [0, 0] is the middle cell, x runs along +x and z along +z, each from -5 to 5 (11 x 11 cells). For multi-cell models, the lowest-index corner. */
+   tile: [number, number];
+-  /** Tiles covered as [cols, rows]. Default [1, 1]. The model is scaled to fit inside this footprint. */
++  /** Cells covered as [x, z]. Default [1, 1]. The model is scaled to fit inside this footprint (one cell is GRID / 11 world units). */
+   span?: [number, number];
+@@ -33,3 +33,3 @@ export interface Placement {
+   rotation?: number;
+-  /** Multiplier on top of the fit-to-footprint scale. Default 1; above 1 overflows the footprint. */
++  /** Multiplier on top of the fit-to-footprint scale. Default 1 fills exactly one cell; above 1 overflows the footprint. */
+   scale?: number;
+diff --git a/src/scene/city.ts b/src/scene/city.ts
+index ca23c0d..690f29b 100644
+--- a/src/scene/city.ts
++++ b/src/scene/city.ts
+@@ -29,2 +29,14 @@ export function tileToWorld(col: number, row: number): [number, number] {
+ 
++/** Placed models use a coarser grid: PLACE_GRID x PLACE_GRID cells across the plate. */
++export const PLACE_GRID = 11;
++/** World size of one placement cell, i.e. of a model at scale 1. */
++export const CELL = GRID / PLACE_GRID;
++/** Placement cells run from -PLACE_HALF to PLACE_HALF on each axis; [0, 0] is the centre of the plate. */
++export const PLACE_HALF = Math.floor(PLACE_GRID / 2);
++
++/** World x/z of a placement cell's centre. */
++export function cellToWorld(cx: number, cz: number): [number, number] {
++  return [cx * CELL, cz * CELL];
++}
++
+ interface Spot {
+diff --git a/src/scene/models.ts b/src/scene/models.ts
+index da33dcf..139c634 100644
+--- a/src/scene/models.ts
++++ b/src/scene/models.ts
+@@ -4,3 +4,3 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+ import type { Placement } from '../content';
+-import { GRID, tileKey, tileToWorld } from './city';
++import { CELL, GRID, PLACE_HALF, cellToWorld, tileKey, tileToWorld } from './city';
+ 
+@@ -34,5 +34,14 @@ export function occupiedTiles(placements: Placement[]): Set<string> {
+   for (const p of placements) {
+-    const [col, row] = p.tile;
++    const [cx, cz] = p.tile;
+     const [w, d] = spanOf(p);
+-    for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) tiles.add(tileKey(col + i, row + j));
++    // Footprint in world units; a tile counts as covered when its centre lies inside it.
++    const [x0, z0] = cellToWorld(cx, cz);
++    const minX = x0 - CELL / 2;
++    const minZ = z0 - CELL / 2;
++    for (let col = 0; col < GRID; col++) {
++      for (let row = 0; row < GRID; row++) {
++        const [tx, tz] = tileToWorld(col, row);
++        if (tx > minX && tx < minX + w * CELL && tz > minZ && tz < minZ + d * CELL) tiles.add(tileKey(col, row));
++      }
++    }
+   }
+@@ -46,6 +55,6 @@ export function occupiedTiles(placements: Placement[]): Set<string> {
+ async function place(p: Placement): Promise<THREE.Object3D> {
+-  const [col, row] = p.tile;
++  const [cx, cz] = p.tile;
+   const [w, d] = spanOf(p);
+-  if (col < 0 || row < 0 || col + w > GRID || row + d > GRID) {
+-    throw new Error(`tile [${col}, ${row}] with span [${w}, ${d}] is outside the ${GRID}x${GRID} grid`);
++  if (cx < -PLACE_HALF || cz < -PLACE_HALF || cx + w - 1 > PLACE_HALF || cz + d - 1 > PLACE_HALF) {
++    throw new Error(`cell [${cx}, ${cz}] with span [${w}, ${d}] is outside the placement grid (${-PLACE_HALF}..${PLACE_HALF})`);
+   }
+@@ -62,4 +71,4 @@ async function place(p: Placement): Promise<THREE.Object3D> {
+   const center = box.getCenter(new THREE.Vector3());
+-  const fitX = size.x > 1e-6 ? w / size.x : Infinity;
+-  const fitZ = size.z > 1e-6 ? d / size.z : Infinity;
++  const fitX = size.x > 1e-6 ? (w * CELL) / size.x : Infinity;
++  const fitZ = size.z > 1e-6 ? (d * CELL) / size.z : Infinity;
+   const fit = (Number.isFinite(Math.min(fitX, fitZ)) ? Math.min(fitX, fitZ) : 1) * (p.scale ?? 1);
+@@ -75,8 +84,8 @@ async function place(p: Placement): Promise<THREE.Object3D> {
+   */
+-  const [x0, z0] = tileToWorld(col, row);
++  const [x0, z0] = cellToWorld(cx, cz);
+   holder.scale.setScalar(fit);
+   holder.position.set(
+-    x0 + (w - 1) / 2 - center.x * fit,
++    x0 + ((w - 1) / 2) * CELL - center.x * fit,
+     ground + (p.offsetY ?? 0) - box.min.y * fit,
+-    z0 + (d - 1) / 2 - center.z * fit,
++    z0 + ((d - 1) / 2) * CELL - center.z * fit,
+   );

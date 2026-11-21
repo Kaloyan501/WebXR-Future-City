@@ -10,19 +10,18 @@
     { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
   ],
   "placements": [
-    { "model": "models/nuclear.glb", "tile": [2, 2], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [4, 4], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [6, 6], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [8, 8], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [10, 10], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [12, 12], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [14, 14], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [16, 16], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [18, 18], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [20, 20], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [22, 22], "scale": 2 },
-    { "model": "models/nuclear.glb", "tile": [24, 24], "scale": 2 }
-],
+    { "model": "models/nuclear.glb", "tile": [-5, -5] },
+    { "model": "models/nuclear.glb", "tile": [-4, -4] },
+    { "model": "models/nuclear.glb", "tile": [-3, -3] },
+    { "model": "models/nuclear.glb", "tile": [-2, -2] },
+    { "model": "models/nuclear.glb", "tile": [-1, -1] },
+    { "model": "models/nuclear.glb", "tile": [0, 0] },
+    { "model": "models/nuclear.glb", "tile": [1, 1] },
+    { "model": "models/nuclear.glb", "tile": [2, 2] },
+    { "model": "models/nuclear.glb", "tile": [3, 3] },
+    { "model": "models/nuclear.glb", "tile": [4, 4] },
+    { "model": "models/nuclear.glb", "tile": [5, 5] }
+  ],
   "pins": [
     {
       "id": 1,

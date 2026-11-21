@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import type { Placement } from '../content';
-import { GRID, tileKey, tileToWorld } from './city';
+import { CELL, GRID, PLACE_HALF, cellToWorld, tileKey, tileToWorld } from './city';
 
 // GLBs exported with `gltf-transform ... --compress meshopt` need the decoder.
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
@@ -32,9 +32,18 @@ const spanOf = (p: Placement): [number, number] => p.span ?? [1, 1];
 export function occupiedTiles(placements: Placement[]): Set<string> {
   const tiles = new Set<string>();
   for (const p of placements) {
-    const [col, row] = p.tile;
+    const [cx, cz] = p.tile;
     const [w, d] = spanOf(p);
-    for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) tiles.add(tileKey(col + i, row + j));
+    // Footprint in world units; a tile counts as covered when its centre lies inside it.
+    const [x0, z0] = cellToWorld(cx, cz);
+    const minX = x0 - CELL / 2;
+    const minZ = z0 - CELL / 2;
+    for (let col = 0; col < GRID; col++) {
+      for (let row = 0; row < GRID; row++) {
+        const [tx, tz] = tileToWorld(col, row);
+        if (tx > minX && tx < minX + w * CELL && tz > minZ && tz < minZ + d * CELL) tiles.add(tileKey(col, row));
+      }
+    }
   }
   return tiles;
 }
@@ -44,10 +53,10 @@ export function occupiedTiles(placements: Placement[]): Set<string> {
  * and stand it on the terrain.
  */
 async function place(p: Placement): Promise<THREE.Object3D> {
-  const [col, row] = p.tile;
+  const [cx, cz] = p.tile;
   const [w, d] = spanOf(p);
-  if (col < 0 || row < 0 || col + w > GRID || row + d > GRID) {
-    throw new Error(`tile [${col}, ${row}] with span [${w}, ${d}] is outside the ${GRID}x${GRID} grid`);
+  if (cx < -PLACE_HALF || cz < -PLACE_HALF || cx + w - 1 > PLACE_HALF || cz + d - 1 > PLACE_HALF) {
+    throw new Error(`cell [${cx}, ${cz}] with span [${w}, ${d}] is outside the placement grid (${-PLACE_HALF}..${PLACE_HALF})`);
   }
 
   const inner = (await load(p.model)).clone(true);
@@ -60,8 +69,8 @@ async function place(p: Placement): Promise<THREE.Object3D> {
   const box = new THREE.Box3().setFromObject(holder);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const fitX = size.x > 1e-6 ? w / size.x : Infinity;
-  const fitZ = size.z > 1e-6 ? d / size.z : Infinity;
+  const fitX = size.x > 1e-6 ? (w * CELL) / size.x : Infinity;
+  const fitZ = size.z > 1e-6 ? (d * CELL) / size.z : Infinity;
   const fit = (Number.isFinite(Math.min(fitX, fitZ)) ? Math.min(fitX, fitZ) : 1) * (p.scale ?? 1);
 
   // Stand on the highest tile under the footprint so the model never sinks into the terrain.
@@ -73,12 +82,12 @@ async function place(p: Placement): Promise<THREE.Object3D> {
     }
   }
   */
-  const [x0, z0] = tileToWorld(col, row);
+  const [x0, z0] = cellToWorld(cx, cz);
   holder.scale.setScalar(fit);
   holder.position.set(
-    x0 + (w - 1) / 2 - center.x * fit,
+    x0 + ((w - 1) / 2) * CELL - center.x * fit,
     ground + (p.offsetY ?? 0) - box.min.y * fit,
-    z0 + (d - 1) / 2 - center.z * fit,
+    z0 + ((d - 1) / 2) * CELL - center.z * fit,
   );
   return holder;
 }

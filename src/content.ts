@@ -25,13 +25,13 @@ export interface Scenario {
 export interface Placement {
   /** Path under public/, e.g. "models/house.glb". */
   model: string;
-  /** [col, row], 0-based. Col runs along +x, row along +z. For multi-tile models, the lowest-index corner. */
+  /** Placement cell [x, z] counted from the centre of the plate: [0, 0] is the middle cell, x runs along +x and z along +z, each from -5 to 5 (11 x 11 cells). For multi-cell models, the lowest-index corner. */
   tile: [number, number];
-  /** Tiles covered as [cols, rows]. Default [1, 1]. The model is scaled to fit inside this footprint. */
+  /** Cells covered as [x, z]. Default [1, 1]. The model is scaled to fit inside this footprint (one cell is GRID / 11 world units). */
   span?: [number, number];
   /** Degrees about the vertical axis. Default 0. */
   rotation?: number;
-  /** Multiplier on top of the fit-to-footprint scale. Default 1; above 1 overflows the footprint. */
+  /** Multiplier on top of the fit-to-footprint scale. Default 1 fills exactly one cell; above 1 overflows the footprint. */
   scale?: number;
   /** Extra lift in world units (e.g. for a raised foundation). Default 0. */
   offsetY?: number;
