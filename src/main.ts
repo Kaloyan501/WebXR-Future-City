@@ -17,6 +17,7 @@ import { installEmulatorIfNeeded } from './xr/emulator';
 const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
 const PLINTH_HEIGHT = 0.85;
 const VR_DISTANCE = 1.3;
+const MOVE_SPEED = 1.0; // m/s at full left-stick deflection
 const GRAB_RADIUS = 1.0; // metres from the plinth centre within which a grip squeeze picks it up
 // Right thumbstick: left/right rotates the model, up/down zooms it.
 const VR_MIN_SCALE = 0.5 / GRID; // ~0.5 m wide
@@ -82,6 +83,7 @@ async function main(): Promise<void> {
     plinth.position.set(stageOffset.x, PLINTH_HEIGHT / 2, -VR_DISTANCE + stageOffset.z);
     world.position.set(stageOffset.x, PLINTH_HEIGHT, -VR_DISTANCE + stageOffset.z);
     vr.toolbar.position.set(stageOffset.x, 1.3, -VR_DISTANCE - 0.7 + stageOffset.z);
+    plinth.rotation.y = world.rotation.y; // the plinth turns with the model
   };
 
   // Desktop camera.
@@ -281,6 +283,7 @@ async function main(): Promise<void> {
     world.scale.setScalar(1);
     world.position.set(0, 0, 0);
     plinth.visible = floor.visible = vr.group.visible = false;
+    plinth.rotation.y = 0;
     selectPin(null);
     resize();
   });
@@ -323,6 +326,32 @@ async function main(): Promise<void> {
     }
   };
 
+  // Left controller: thumbstick moves the stage relative to where you are looking; Y turns it left, X turns it right.
+  const moveDir = new THREE.Vector3();
+  const applyLeft = (dt: number): void => {
+    const session = renderer.xr.getSession();
+    if (!session) return;
+    const dead = (v: number): number => (Math.abs(v) < STICK_DEADZONE ? 0 : v);
+    for (const src of session.inputSources) {
+      if (src.handedness !== 'left' || !src.gamepad) continue;
+      const x = dead(src.gamepad.axes[2] ?? 0);
+      const y = dead(src.gamepad.axes[3] ?? 0);
+      if (x !== 0 || y !== 0) {
+        // Forward = the head's facing direction flattened onto the floor; stick up is negative y.
+        moveDir.set(0, 0, -1).applyQuaternion(camQuat);
+        moveDir.y = 0;
+        if (moveDir.lengthSq() > 1e-6) {
+          moveDir.normalize();
+          stageOffset.x += (-moveDir.z * x - moveDir.x * y) * MOVE_SPEED * dt;
+          stageOffset.z += (moveDir.x * x - moveDir.z * y) * MOVE_SPEED * dt;
+        }
+      }
+      // xr-standard buttons: 4 = X, 5 = Y on the left Touch controller.
+      if (src.gamepad.buttons[5]?.pressed) world.rotation.y += ROTATE_SPEED * dt;
+      if (src.gamepad.buttons[4]?.pressed) world.rotation.y -= ROTATE_SPEED * dt;
+    }
+  };
+
   renderer.setAnimationLoop((time) => {
     timer.update(time);
     const dt = Math.min(timer.getDelta(), 0.1);
@@ -333,6 +362,8 @@ async function main(): Promise<void> {
         applyStage();
       }
       applyStick(dt);
+      applyLeft(dt);
+      applyStage(); // after all input, so the plinth rotation and offsets are applied every frame
       const open = selectedId === null ? undefined : pins.byId(selectedId);
       if (open) vr.moveCard(open.head.getWorldPosition(pinPos));
     } else {
