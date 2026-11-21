@@ -17,6 +17,7 @@ import { installEmulatorIfNeeded } from './xr/emulator';
 const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
 const PLINTH_HEIGHT = 0.85;
 const VR_DISTANCE = 1.3;
+const GRAB_RADIUS = 1.0; // metres from the plinth centre within which a grip squeeze picks it up
 // Right thumbstick: left/right rotates the model, up/down zooms it.
 const VR_MIN_SCALE = 0.5 / GRID; // ~0.5 m wide
 const VR_MAX_SCALE = 1.5 / GRID; // ~1.5 m wide
@@ -74,6 +75,14 @@ async function main(): Promise<void> {
   // Control panel floats behind the model at about eye height, so nobody has to look down for it.
   vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
   scene.add(vr.group);
+
+  // Movable stage: plinth, model and toolbar share one horizontal offset (grip-drag in XR).
+  const stageOffset = new THREE.Vector3();
+  const applyStage = (): void => {
+    plinth.position.set(stageOffset.x, PLINTH_HEIGHT / 2, -VR_DISTANCE + stageOffset.z);
+    world.position.set(stageOffset.x, PLINTH_HEIGHT, -VR_DISTANCE + stageOffset.z);
+    vr.toolbar.position.set(stageOffset.x, 1.3, -VR_DISTANCE - 0.7 + stageOffset.z);
+  };
 
   // Desktop camera.
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 300);
@@ -208,6 +217,10 @@ async function main(): Promise<void> {
   const controllerModels = new XRControllerModelFactory();
   const handModels = new XRHandModelFactory();
   const tempMatrix = new THREE.Matrix4();
+  let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
+  const rayPos = new THREE.Vector3();
+  const dragStart = new THREE.Vector3();
+  const dragStartOffset = new THREE.Vector3();
 
   for (let i = 0; i < 2; i++) {
     const ray = renderer.xr.getController(i);
@@ -223,6 +236,17 @@ async function main(): Promise<void> {
       raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
       handlePick();
     });
+    // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
+    ray.addEventListener('squeezestart', () => {
+      ray.getWorldPosition(rayPos);
+      if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
+      dragRay = ray;
+      dragStart.copy(rayPos);
+      dragStartOffset.copy(stageOffset);
+    });
+    ray.addEventListener('squeezeend', () => {
+      if (dragRay === ray) dragRay = null;
+    });
     scene.add(ray);
 
     const grip = renderer.xr.getControllerGrip(i);
@@ -237,18 +261,22 @@ async function main(): Promise<void> {
   renderer.xr.addEventListener('sessionstart', () => {
     world.rotation.y = 0;
     world.scale.setScalar(VR_SCALE);
-    world.position.set(0, PLINTH_HEIGHT, -VR_DISTANCE);
+  stageOffset.set(0, 0, 0);
+  applyStage();
     const ar = renderer.xr.getSession()!.environmentBlendMode !== 'opaque';
-    // The plate sits at table height, so keep the plinth under it in AR too; only the
-    // floor disc is VR-only (it would cover the real floor).
     plinth.visible = true;
     floor.visible = !ar;
     vr.group.visible = true;
     selectPin(null);
+
+  
+    const base = renderer.xr.getReferenceSpace() as XRReferenceSpace | null;
+    if (base) renderer.xr.setReferenceSpace(base.getOffsetReferenceSpace(new XRRigidTransform({ x: 0, y: -1.6, z: 0 })));
   });
   renderer.xr.addEventListener('sessionend', () => {
     xrLogged = false;
     xrFrames = 0;
+    dragRay = null;
     world.rotation.y = 0;
     world.scale.setScalar(1);
     world.position.set(0, 0, 0);
@@ -299,6 +327,11 @@ async function main(): Promise<void> {
     timer.update(time);
     const dt = Math.min(timer.getDelta(), 0.1);
     if (renderer.xr.isPresenting) {
+      if (dragRay) {
+        dragRay.getWorldPosition(rayPos);
+        stageOffset.set(dragStartOffset.x + rayPos.x - dragStart.x, 0, dragStartOffset.z + rayPos.z - dragStart.z);
+        applyStage();
+      }
       applyStick(dt);
       const open = selectedId === null ? undefined : pins.byId(selectedId);
       if (open) vr.moveCard(open.head.getWorldPosition(pinPos));
