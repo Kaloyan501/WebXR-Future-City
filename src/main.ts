@@ -80,11 +80,14 @@ async function main(): Promise<void> {
 
   // Movable stage: plinth, model and toolbar share one horizontal offset (grip-drag in XR).
   const stageOffset = new THREE.Vector3();
+  let stageYaw = 0; // plinth + toolbar heading (left controller X/Y); the plate rides on the plinth
+  let plateYaw = 0; // extra plate-only turn relative to the plinth (right stick)
   const applyStage = (): void => {
     plinth.position.set(stageOffset.x, PLINTH_HEIGHT / 2, -VR_DISTANCE + stageOffset.z);
     world.position.set(stageOffset.x, PLINTH_HEIGHT, -VR_DISTANCE + stageOffset.z);
-    const yaw = world.rotation.y;
-    plinth.rotation.y = yaw; // the plinth turns with the model
+    world.rotation.y = stageYaw + plateYaw;
+    const yaw = stageYaw;
+    plinth.rotation.y = yaw;
     // The toolbar orbits the plinth centre and keeps facing out from the same side of it.
     vr.toolbar.position.set(
       stageOffset.x - TOOLBAR_BEHIND * Math.sin(yaw),
@@ -269,7 +272,7 @@ async function main(): Promise<void> {
   }
 
   renderer.xr.addEventListener('sessionstart', () => {
-    world.rotation.y = 0;
+    stageYaw = plateYaw = 0;
     world.scale.setScalar(VR_SCALE);
   stageOffset.set(0, 0, 0);
   applyStage();
@@ -287,6 +290,7 @@ async function main(): Promise<void> {
     xrLogged = false;
     xrFrames = 0;
     dragRay = null;
+    stageYaw = plateYaw = 0;
     world.rotation.y = 0;
     world.scale.setScalar(1);
     world.position.set(0, 0, 0);
@@ -328,7 +332,7 @@ async function main(): Promise<void> {
       if (src.handedness !== 'right' || !src.gamepad) continue;
       const x = dead(src.gamepad.axes[2] ?? 0);
       const y = dead(src.gamepad.axes[3] ?? 0);
-      world.rotation.y -= x * ROTATE_SPEED * dt;
+      plateYaw -= x * ROTATE_SPEED * dt;
       const s = world.scale.x * Math.exp(-y * ZOOM_SPEED * dt); // stick up is negative y
       world.scale.setScalar(THREE.MathUtils.clamp(s, VR_MIN_SCALE, VR_MAX_SCALE));
     }
@@ -355,8 +359,8 @@ async function main(): Promise<void> {
         }
       }
       // xr-standard buttons: 4 = X, 5 = Y on the left Touch controller.
-      if (src.gamepad.buttons[5]?.pressed) world.rotation.y += ROTATE_SPEED * dt;
-      if (src.gamepad.buttons[4]?.pressed) world.rotation.y -= ROTATE_SPEED * dt;
+      if (src.gamepad.buttons[5]?.pressed) stageYaw += ROTATE_SPEED * dt;
+      if (src.gamepad.buttons[4]?.pressed) stageYaw -= ROTATE_SPEED * dt;
     }
   };
 

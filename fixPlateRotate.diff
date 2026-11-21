@@ -1,0 +1,38 @@
+diff --git a/src/main.ts b/src/main.ts
+index 63c005d..0fd6eb8 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -82,2 +82,4 @@ async function main(): Promise<void> {
+   const stageOffset = new THREE.Vector3();
++  let stageYaw = 0; // plinth + toolbar heading (left controller X/Y); the plate rides on the plinth
++  let plateYaw = 0; // extra plate-only turn relative to the plinth (right stick)
+   const applyStage = (): void => {
+@@ -85,4 +87,5 @@ async function main(): Promise<void> {
+     world.position.set(stageOffset.x, PLINTH_HEIGHT, -VR_DISTANCE + stageOffset.z);
+-    const yaw = world.rotation.y;
+-    plinth.rotation.y = yaw; // the plinth turns with the model
++    world.rotation.y = stageYaw + plateYaw;
++    const yaw = stageYaw;
++    plinth.rotation.y = yaw;
+     // The toolbar orbits the plinth centre and keeps facing out from the same side of it.
+@@ -271,3 +274,3 @@ async function main(): Promise<void> {
+   renderer.xr.addEventListener('sessionstart', () => {
+-    world.rotation.y = 0;
++    stageYaw = plateYaw = 0;
+     world.scale.setScalar(VR_SCALE);
+@@ -289,2 +292,3 @@ async function main(): Promise<void> {
+     dragRay = null;
++    stageYaw = plateYaw = 0;
+     world.rotation.y = 0;
+@@ -330,3 +334,3 @@ async function main(): Promise<void> {
+       const y = dead(src.gamepad.axes[3] ?? 0);
+-      world.rotation.y -= x * ROTATE_SPEED * dt;
++      plateYaw -= x * ROTATE_SPEED * dt;
+       const s = world.scale.x * Math.exp(-y * ZOOM_SPEED * dt); // stick up is negative y
+@@ -357,4 +361,4 @@ async function main(): Promise<void> {
+       // xr-standard buttons: 4 = X, 5 = Y on the left Touch controller.
+-      if (src.gamepad.buttons[5]?.pressed) world.rotation.y += ROTATE_SPEED * dt;
+-      if (src.gamepad.buttons[4]?.pressed) world.rotation.y -= ROTATE_SPEED * dt;
++      if (src.gamepad.buttons[5]?.pressed) stageYaw += ROTATE_SPEED * dt;
++      if (src.gamepad.buttons[4]?.pressed) stageYaw -= ROTATE_SPEED * dt;
+     }
