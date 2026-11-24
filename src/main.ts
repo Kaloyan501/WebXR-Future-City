@@ -236,9 +236,10 @@ async function main(): Promise<void> {
   const tempMatrix = new THREE.Matrix4();
   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
   const grips: THREE.Object3D[] = [];
+  const rays: THREE.Object3D[] = [];
 
   // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
-  const holdables = new Holdables(grips, {
+  const holdables = new Holdables(grips, rays, {
     onGrab: (pinId) => {
       const item = pinId === undefined ? undefined : pins.byId(pinId);
       if (!item) return;
@@ -287,6 +288,7 @@ async function main(): Promise<void> {
       if (dragRay === ray) dragRay = null;
     });
     scene.add(ray);
+    rays.push(ray);
 
     const grip = renderer.xr.getControllerGrip(i);
     grip.add(controllerModels.createControllerModel(grip));

@@ -1,0 +1,81 @@
+diff --git a/src/main.ts b/src/main.ts
+index c585b55..e8b2503 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -236,9 +236,10 @@ async function main(): Promise<void> {
+   const tempMatrix = new THREE.Matrix4();
+   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
+   const grips: THREE.Object3D[] = [];
++  const rays: THREE.Object3D[] = [];
+ 
+   // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
+-  const holdables = new Holdables(grips, {
++  const holdables = new Holdables(grips, rays, {
+     onGrab: (pinId) => {
+       const item = pinId === undefined ? undefined : pins.byId(pinId);
+       if (!item) return;
+@@ -287,6 +288,7 @@ async function main(): Promise<void> {
+       if (dragRay === ray) dragRay = null;
+     });
+     scene.add(ray);
++    rays.push(ray);
+ 
+     const grip = renderer.xr.getControllerGrip(i);
+     grip.add(controllerModels.createControllerModel(grip));
+diff --git a/src/xr/holdables.ts b/src/xr/holdables.ts
+index 78fcbfa..912f226 100644
+--- a/src/xr/holdables.ts
++++ b/src/xr/holdables.ts
+@@ -2,7 +2,7 @@ import * as THREE from 'three';
+ 
+ const HOLD_SIZE = 0.15; // metres: longest side of a model while it is in the hand
+ const HOLD_OFFSET = new THREE.Vector3(0, 0.02, -0.08); // model centre relative to the grip origin
+-const REACH = 0.06; // metres from the grip to the model's bounding box that still counts as touching it
++const REACH = 0.1; // metres from the grip or the controller tip to the model's bounding box that still counts as touching it
+ const RETURN_RATE = 14; // 1/s, exponential ease back to the tile
+ 
+ interface Holdable {
+@@ -26,10 +26,14 @@ export class Holdables {
+   private readonly v = new THREE.Vector3();
+ 
+   private readonly grips: THREE.Object3D[];
++  private readonly rays: THREE.Object3D[];
+   private readonly cb: HoldCallbacks;
++  private readonly tip = new THREE.Vector3();
+ 
+-  constructor(grips: THREE.Object3D[], cb: HoldCallbacks) {
++  /** `grips`: controller grip spaces (the handle). `rays`: target-ray spaces (the tip). Both are filled in as controllers appear. */
++  constructor(grips: THREE.Object3D[], rays: THREE.Object3D[], cb: HoldCallbacks) {
+     this.grips = grips;
++    this.rays = rays;
+     this.cb = cb;
+   }
+ 
+@@ -48,18 +52,25 @@ export class Holdables {
+     if (this.held.has(hand)) return true;
+     const grip = this.grips[hand];
+     grip.getWorldPosition(this.v);
++    this.rays[hand]?.getWorldPosition(this.tip);
+ 
+     let best: Holdable | null = null;
+     let bestD = REACH;
++    let nearest = Infinity;
+     for (const it of this.items) {
+       if (it.hand !== null) continue;
+-      const d = this.box.setFromObject(it.root).distanceToPoint(this.v);
++      this.box.setFromObject(it.root);
++      const d = Math.min(this.box.distanceToPoint(this.v), this.rays[hand] ? this.box.distanceToPoint(this.tip) : Infinity);
++      nearest = Math.min(nearest, d);
+       if (d < bestD) {
+         best = it;
+         bestD = d;
+       }
+     }
+-    if (!best) return false;
++    if (!best) {
++      console.info(`[hold] hand ${hand}: nothing in reach (${this.items.length} holdable, nearest ${nearest.toFixed(3)} m, reach ${REACH} m)`);
++      return false;
++    }
+ 
+     // attach() keeps the world transform; then size it for the hand and centre it on the grip.
+     const size = this.box.setFromObject(best.root).getSize(new THREE.Vector3());
