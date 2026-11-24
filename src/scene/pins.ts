@@ -85,7 +85,7 @@ export function createPins(pins: Pin[]): Pins {
     group,
     items,
     byId: (id) => items.find((it) => it.data.id === id),
-    hitMeshes: () => items.filter((it) => it.enabled).map((it) => it.hit),
+    hitMeshes: () => items.filter((it) => it.enabled && it.group.visible).map((it) => it.hit),
     setLayer(layer) {
       for (const it of items) {
         it.enabled = layer === 'all' || it.data.tags.includes(layer);

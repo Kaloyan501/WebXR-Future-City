@@ -35,6 +35,8 @@ export interface Placement {
   scale?: number;
   /** Extra lift in world units (e.g. for a raised foundation). Default 0. */
   offsetY?: number;
+  /** Id of the pin this model represents. In XR, a model with a pin can be picked up and shows that pin's card. */
+  pin?: number;
 }
 
 export interface Content {

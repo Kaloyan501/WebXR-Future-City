@@ -12,6 +12,7 @@ import { createPins } from './scene/pins';
 import { initDomUI } from './ui/cards-dom';
 import { VrUI, type VrAction } from './ui/cards-vr';
 import { installEmulatorIfNeeded } from './xr/emulator';
+import { Holdables } from './xr/holdables';
 
 // --- VR placement: the 24-tile plate becomes a ~1 m model on a table-height plinth ---
 const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
@@ -57,7 +58,10 @@ async function main(): Promise<void> {
   world.add(city.group, pins.group);
   //world.add(pins.group);
   // Models load in the background, so a slow or missing file never blocks the UI.
-  void loadPlacements(content.placements).then((models) => world.add(models));
+  const placed = loadPlacements(content.placements).then((models) => {
+    world.add(models);
+    return models;
+  });
 
   // VR-only props: plinth, floor disc and in-scene UI.
   const plinth = new THREE.Mesh(
@@ -231,6 +235,26 @@ async function main(): Promise<void> {
   const handModels = new XRHandModelFactory();
   const tempMatrix = new THREE.Matrix4();
   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
+  const grips: THREE.Object3D[] = [];
+
+  // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
+  const holdables = new Holdables(grips, {
+    onGrab: (pinId) => {
+      const item = pinId === undefined ? undefined : pins.byId(pinId);
+      if (!item) return;
+      item.group.visible = false;
+      selectPin(pinId!);
+    },
+    onRelease: (pinId) => {
+      const item = pinId === undefined ? undefined : pins.byId(pinId);
+      if (!item) return;
+      item.group.visible = true;
+      if (selectedId === pinId) selectPin(null);
+    },
+  });
+  void placed.then((models) => {
+    for (const m of models.children) if (m.userData.holdable) holdables.add(m, m.userData.pinId as number | undefined);
+  });
   const rayPos = new THREE.Vector3();
   const dragStart = new THREE.Vector3();
   const dragStartOffset = new THREE.Vector3();
@@ -251,6 +275,7 @@ async function main(): Promise<void> {
     });
     // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
     ray.addEventListener('squeezestart', () => {
+      if (holdables.tryGrab(i)) return; // a model within reach wins over dragging the plinth
       ray.getWorldPosition(rayPos);
       if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
       dragRay = ray;
@@ -258,6 +283,7 @@ async function main(): Promise<void> {
       dragStartOffset.copy(stageOffset);
     });
     ray.addEventListener('squeezeend', () => {
+      holdables.release(i);
       if (dragRay === ray) dragRay = null;
     });
     scene.add(ray);
@@ -265,6 +291,7 @@ async function main(): Promise<void> {
     const grip = renderer.xr.getControllerGrip(i);
     grip.add(controllerModels.createControllerModel(grip));
     scene.add(grip);
+    grips.push(grip);
 
     const hand = renderer.xr.getHand(i);
     hand.add(handModels.createHandModel(hand, 'mesh'));
@@ -290,6 +317,7 @@ async function main(): Promise<void> {
     xrLogged = false;
     xrFrames = 0;
     dragRay = null;
+    holdables.releaseAll();
     stageYaw = plateYaw = 0;
     world.rotation.y = 0;
     world.scale.setScalar(1);
@@ -377,7 +405,10 @@ async function main(): Promise<void> {
       applyLeft(dt);
       applyStage(); // after all input, so the plinth rotation and offsets are applied every frame
       const open = selectedId === null ? undefined : pins.byId(selectedId);
-      if (open) vr.moveCard(open.head.getWorldPosition(pinPos));
+      if (open) {
+        if (!holdables.heldPosition(open.data.id, pinPos)) open.head.getWorldPosition(pinPos);
+        vr.moveCard(pinPos);
+      }
     } else {
       controls.update();
     }
@@ -389,6 +420,7 @@ async function main(): Promise<void> {
       xrLogged = true;
       console.info('[xr] head y:', camPos.y.toFixed(2), 'plate y:', world.position.y.toFixed(2), 'plinth:', plinth.visible);
     }
+    holdables.update(dt);
     city.update(dt);
     pins.billboard(camQuat);
     vr.update(camPos);

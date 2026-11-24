@@ -63,6 +63,8 @@ async function place(p: Placement): Promise<THREE.Object3D> {
   inner.rotation.y = THREE.MathUtils.degToRad(p.rotation ?? 0); // rotate first: it changes the footprint
   const holder = new THREE.Group();
   holder.name = p.model;
+  holder.userData.pinId = p.pin;
+  holder.userData.holdable = true;
   holder.add(inner);
   holder.updateMatrixWorld(true);
 

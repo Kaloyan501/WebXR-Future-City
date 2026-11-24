@@ -1,0 +1,283 @@
+diff --git a/content/content.json b/content/content.json
+index 9152355..3351d13 100644
+--- a/content/content.json
++++ b/content/content.json
+@@ -10,7 +10,7 @@
+     { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
+   ],
+   "placements": [
+-    { "model": "models/nuclear.glb", "tile": [-5, -5] },
++    { "model": "models/nuclear.glb", "tile": [-5, -5], "pin": 1 },
+     { "model": "models/nuclear.glb", "tile": [-4, -4] },
+     { "model": "models/nuclear.glb", "tile": [-3, -3] },
+     { "model": "models/nuclear.glb", "tile": [-2, -2] },
+diff --git a/src/content.ts b/src/content.ts
+index 57d21c3..9cdad43 100644
+--- a/src/content.ts
++++ b/src/content.ts
+@@ -35,6 +35,8 @@ export interface Placement {
+   scale?: number;
+   /** Extra lift in world units (e.g. for a raised foundation). Default 0. */
+   offsetY?: number;
++  /** Id of the pin this model represents. In XR, a model with a pin can be picked up and shows that pin's card. */
++  pin?: number;
+ }
+ 
+ export interface Content {
+diff --git a/src/main.ts b/src/main.ts
+index 48a4ad8..c585b55 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -12,6 +12,7 @@ import { createPins } from './scene/pins';
+ import { initDomUI } from './ui/cards-dom';
+ import { VrUI, type VrAction } from './ui/cards-vr';
+ import { installEmulatorIfNeeded } from './xr/emulator';
++import { Holdables } from './xr/holdables';
+ 
+ // --- VR placement: the 24-tile plate becomes a ~1 m model on a table-height plinth ---
+ const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
+@@ -57,7 +58,10 @@ async function main(): Promise<void> {
+   world.add(city.group, pins.group);
+   //world.add(pins.group);
+   // Models load in the background, so a slow or missing file never blocks the UI.
+-  void loadPlacements(content.placements).then((models) => world.add(models));
++  const placed = loadPlacements(content.placements).then((models) => {
++    world.add(models);
++    return models;
++  });
+ 
+   // VR-only props: plinth, floor disc and in-scene UI.
+   const plinth = new THREE.Mesh(
+@@ -231,6 +235,26 @@ async function main(): Promise<void> {
+   const handModels = new XRHandModelFactory();
+   const tempMatrix = new THREE.Matrix4();
+   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
++  const grips: THREE.Object3D[] = [];
++
++  // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
++  const holdables = new Holdables(grips, {
++    onGrab: (pinId) => {
++      const item = pinId === undefined ? undefined : pins.byId(pinId);
++      if (!item) return;
++      item.group.visible = false;
++      selectPin(pinId!);
++    },
++    onRelease: (pinId) => {
++      const item = pinId === undefined ? undefined : pins.byId(pinId);
++      if (!item) return;
++      item.group.visible = true;
++      if (selectedId === pinId) selectPin(null);
++    },
++  });
++  void placed.then((models) => {
++    for (const m of models.children) if (m.userData.holdable) holdables.add(m, m.userData.pinId as number | undefined);
++  });
+   const rayPos = new THREE.Vector3();
+   const dragStart = new THREE.Vector3();
+   const dragStartOffset = new THREE.Vector3();
+@@ -251,6 +275,7 @@ async function main(): Promise<void> {
+     });
+     // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
+     ray.addEventListener('squeezestart', () => {
++      if (holdables.tryGrab(i)) return; // a model within reach wins over dragging the plinth
+       ray.getWorldPosition(rayPos);
+       if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
+       dragRay = ray;
+@@ -258,6 +283,7 @@ async function main(): Promise<void> {
+       dragStartOffset.copy(stageOffset);
+     });
+     ray.addEventListener('squeezeend', () => {
++      holdables.release(i);
+       if (dragRay === ray) dragRay = null;
+     });
+     scene.add(ray);
+@@ -265,6 +291,7 @@ async function main(): Promise<void> {
+     const grip = renderer.xr.getControllerGrip(i);
+     grip.add(controllerModels.createControllerModel(grip));
+     scene.add(grip);
++    grips.push(grip);
+ 
+     const hand = renderer.xr.getHand(i);
+     hand.add(handModels.createHandModel(hand, 'mesh'));
+@@ -290,6 +317,7 @@ async function main(): Promise<void> {
+     xrLogged = false;
+     xrFrames = 0;
+     dragRay = null;
++    holdables.releaseAll();
+     stageYaw = plateYaw = 0;
+     world.rotation.y = 0;
+     world.scale.setScalar(1);
+@@ -377,7 +405,10 @@ async function main(): Promise<void> {
+       applyLeft(dt);
+       applyStage(); // after all input, so the plinth rotation and offsets are applied every frame
+       const open = selectedId === null ? undefined : pins.byId(selectedId);
+-      if (open) vr.moveCard(open.head.getWorldPosition(pinPos));
++      if (open) {
++        if (!holdables.heldPosition(open.data.id, pinPos)) open.head.getWorldPosition(pinPos);
++        vr.moveCard(pinPos);
++      }
+     } else {
+       controls.update();
+     }
+@@ -389,6 +420,7 @@ async function main(): Promise<void> {
+       xrLogged = true;
+       console.info('[xr] head y:', camPos.y.toFixed(2), 'plate y:', world.position.y.toFixed(2), 'plinth:', plinth.visible);
+     }
++    holdables.update(dt);
+     city.update(dt);
+     pins.billboard(camQuat);
+     vr.update(camPos);
+diff --git a/src/scene/models.ts b/src/scene/models.ts
+index 139c634..10711be 100644
+--- a/src/scene/models.ts
++++ b/src/scene/models.ts
+@@ -63,6 +63,8 @@ async function place(p: Placement): Promise<THREE.Object3D> {
+   inner.rotation.y = THREE.MathUtils.degToRad(p.rotation ?? 0); // rotate first: it changes the footprint
+   const holder = new THREE.Group();
+   holder.name = p.model;
++  holder.userData.pinId = p.pin;
++  holder.userData.holdable = true;
+   holder.add(inner);
+   holder.updateMatrixWorld(true);
+ 
+diff --git a/src/scene/pins.ts b/src/scene/pins.ts
+index 551e940..a4382d5 100644
+--- a/src/scene/pins.ts
++++ b/src/scene/pins.ts
+@@ -85,7 +85,7 @@ export function createPins(pins: Pin[]): Pins {
+     group,
+     items,
+     byId: (id) => items.find((it) => it.data.id === id),
+-    hitMeshes: () => items.filter((it) => it.enabled).map((it) => it.hit),
++    hitMeshes: () => items.filter((it) => it.enabled && it.group.visible).map((it) => it.hit),
+     setLayer(layer) {
+       for (const it of items) {
+         it.enabled = layer === 'all' || it.data.tags.includes(layer);
+diff --git a/src/xr/holdables.ts b/src/xr/holdables.ts
+new file mode 100644
+index 0000000..78fcbfa
+--- /dev/null
++++ b/src/xr/holdables.ts
+@@ -0,0 +1,122 @@
++import * as THREE from 'three';
++
++const HOLD_SIZE = 0.15; // metres: longest side of a model while it is in the hand
++const HOLD_OFFSET = new THREE.Vector3(0, 0.02, -0.08); // model centre relative to the grip origin
++const REACH = 0.06; // metres from the grip to the model's bounding box that still counts as touching it
++const RETURN_RATE = 14; // 1/s, exponential ease back to the tile
++
++interface Holdable {
++  root: THREE.Object3D;
++  pinId?: number;
++  home: { parent: THREE.Object3D; pos: THREE.Vector3; quat: THREE.Quaternion; scale: THREE.Vector3 };
++  hand: number | null;
++  returning: boolean;
++}
++
++export interface HoldCallbacks {
++  onGrab(pinId: number | undefined, hand: number): void;
++  onRelease(pinId: number | undefined, hand: number): void;
++}
++
++/** Squeeze next to a placed model to carry it on the controller; releasing eases it back to its tile. */
++export class Holdables {
++  private readonly items: Holdable[] = [];
++  private readonly held = new Map<number, Holdable>();
++  private readonly box = new THREE.Box3();
++  private readonly v = new THREE.Vector3();
++
++  private readonly grips: THREE.Object3D[];
++  private readonly cb: HoldCallbacks;
++
++  constructor(grips: THREE.Object3D[], cb: HoldCallbacks) {
++    this.grips = grips;
++    this.cb = cb;
++  }
++
++  add(root: THREE.Object3D, pinId?: number): void {
++    this.items.push({
++      root,
++      pinId,
++      home: { parent: root.parent!, pos: root.position.clone(), quat: root.quaternion.clone(), scale: root.scale.clone() },
++      hand: null,
++      returning: false,
++    });
++  }
++
++  /** Returns true if a model was grabbed (or this hand already holds one), so the caller can skip other squeeze actions. */
++  tryGrab(hand: number): boolean {
++    if (this.held.has(hand)) return true;
++    const grip = this.grips[hand];
++    grip.getWorldPosition(this.v);
++
++    let best: Holdable | null = null;
++    let bestD = REACH;
++    for (const it of this.items) {
++      if (it.hand !== null) continue;
++      const d = this.box.setFromObject(it.root).distanceToPoint(this.v);
++      if (d < bestD) {
++        best = it;
++        bestD = d;
++      }
++    }
++    if (!best) return false;
++
++    // attach() keeps the world transform; then size it for the hand and centre it on the grip.
++    const size = this.box.setFromObject(best.root).getSize(new THREE.Vector3());
++    const k = HOLD_SIZE / Math.max(size.x, size.y, size.z);
++    grip.attach(best.root);
++    best.root.scale.multiplyScalar(k); // the grip's world scale is 1
++    best.root.quaternion.identity();
++    best.root.position.set(0, 0, 0);
++    grip.updateWorldMatrix(true, true);
++    this.box.setFromObject(best.root);
++    best.root.position.sub(grip.worldToLocal(this.box.getCenter(this.v))).add(HOLD_OFFSET);
++
++    best.hand = hand;
++    best.returning = false;
++    this.held.set(hand, best);
++    this.cb.onGrab(best.pinId, hand);
++    return true;
++  }
++
++  release(hand: number): void {
++    const it = this.held.get(hand);
++    if (!it) return;
++    this.held.delete(hand);
++    it.hand = null;
++    it.returning = true;
++    it.home.parent.attach(it.root); // world pose preserved; update() eases the local pose back to the tile
++    this.cb.onRelease(it.pinId, hand);
++  }
++
++  releaseAll(): void {
++    for (const hand of [...this.held.keys()]) this.release(hand);
++  }
++
++  /** World position of the model currently held for this pin, if any. */
++  heldPosition(pinId: number, out: THREE.Vector3): boolean {
++    for (const it of this.held.values()) {
++      if (it.pinId === pinId) {
++        it.root.getWorldPosition(out);
++        return true;
++      }
++    }
++    return false;
++  }
++
++  update(dt: number): void {
++    const k = 1 - Math.exp(-RETURN_RATE * dt);
++    for (const it of this.items) {
++      if (!it.returning) continue;
++      it.root.position.lerp(it.home.pos, k);
++      it.root.quaternion.slerp(it.home.quat, k);
++      it.root.scale.lerp(it.home.scale, k);
++      if (it.root.position.distanceTo(it.home.pos) < 1e-3) {
++        it.root.position.copy(it.home.pos);
++        it.root.quaternion.copy(it.home.quat);
++        it.root.scale.copy(it.home.scale);
++        it.returning = false;
++      }
++    }
++  }
++}
