@@ -1,0 +1,109 @@
+diff --git a/src/main.ts b/src/main.ts
+index c585b55..43414c9 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -236,9 +236,10 @@ async function main(): Promise<void> {
+   const tempMatrix = new THREE.Matrix4();
+   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
+   const grips: THREE.Object3D[] = [];
++  const rays: THREE.Object3D[] = [];
+ 
+   // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
+-  const holdables = new Holdables(grips, {
++  const holdables = new Holdables(grips, rays, {
+     onGrab: (pinId) => {
+       const item = pinId === undefined ? undefined : pins.byId(pinId);
+       if (!item) return;
+@@ -275,7 +276,7 @@ async function main(): Promise<void> {
+     });
+     // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
+     ray.addEventListener('squeezestart', () => {
+-      if (holdables.tryGrab(i)) return; // a model within reach wins over dragging the plinth
++      if (holdables.tryGrab(i)) return; // a model under the laser wins over dragging the plinth
+       ray.getWorldPosition(rayPos);
+       if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
+       dragRay = ray;
+@@ -287,6 +288,7 @@ async function main(): Promise<void> {
+       if (dragRay === ray) dragRay = null;
+     });
+     scene.add(ray);
++    rays.push(ray);
+ 
+     const grip = renderer.xr.getControllerGrip(i);
+     grip.add(controllerModels.createControllerModel(grip));
+diff --git a/src/xr/holdables.ts b/src/xr/holdables.ts
+index 78fcbfa..71a870f 100644
+--- a/src/xr/holdables.ts
++++ b/src/xr/holdables.ts
+@@ -2,7 +2,8 @@ import * as THREE from 'three';
+ 
+ const HOLD_SIZE = 0.15; // metres: longest side of a model while it is in the hand
+ const HOLD_OFFSET = new THREE.Vector3(0, 0.02, -0.08); // model centre relative to the grip origin
+-const REACH = 0.06; // metres from the grip to the model's bounding box that still counts as touching it
++const LASER_LENGTH = 3; // metres; matches the line drawn on each controller
++const BOX_PAD = 0.01; // metres of slack around a model's bounds, so thin parts are still easy to hit
+ const RETURN_RATE = 14; // 1/s, exponential ease back to the tile
+ 
+ interface Holdable {
+@@ -18,18 +19,23 @@ export interface HoldCallbacks {
+   onRelease(pinId: number | undefined, hand: number): void;
+ }
+ 
+-/** Squeeze next to a placed model to carry it on the controller; releasing eases it back to its tile. */
++/** Squeeze while the controller's laser crosses a placed model to carry it; releasing eases it back to its tile. */
+ export class Holdables {
+   private readonly items: Holdable[] = [];
+   private readonly held = new Map<number, Holdable>();
+   private readonly box = new THREE.Box3();
+   private readonly v = new THREE.Vector3();
+-
++  private readonly hit = new THREE.Vector3();
++  private readonly ray = new THREE.Ray();
++  private readonly q = new THREE.Quaternion();
+   private readonly grips: THREE.Object3D[];
++  private readonly rays: THREE.Object3D[];
+   private readonly cb: HoldCallbacks;
+ 
+-  constructor(grips: THREE.Object3D[], cb: HoldCallbacks) {
++  /** `grips`: controller grip spaces (where a held model attaches). `rays`: target-ray spaces (the laser). Both are filled in as controllers appear. */
++  constructor(grips: THREE.Object3D[], rays: THREE.Object3D[], cb: HoldCallbacks) {
+     this.grips = grips;
++    this.rays = rays;
+     this.cb = cb;
+   }
+ 
+@@ -47,19 +53,30 @@ export class Holdables {
+   tryGrab(hand: number): boolean {
+     if (this.held.has(hand)) return true;
+     const grip = this.grips[hand];
+-    grip.getWorldPosition(this.v);
++    const laser = this.rays[hand];
++    if (!grip || !laser) return false;
++
++    // Hit test: the laser (a ray along the controller's -Z) against each free model's bounds; nearest hit wins.
++    laser.getWorldPosition(this.ray.origin);
++    laser.getWorldQuaternion(this.q);
++    this.ray.direction.set(0, 0, -1).applyQuaternion(this.q);
+ 
+     let best: Holdable | null = null;
+-    let bestD = REACH;
++    let bestD = LASER_LENGTH;
+     for (const it of this.items) {
+       if (it.hand !== null) continue;
+-      const d = this.box.setFromObject(it.root).distanceToPoint(this.v);
++      this.box.setFromObject(it.root).expandByScalar(BOX_PAD);
++      if (!this.ray.intersectBox(this.box, this.hit)) continue;
++      const d = this.hit.distanceTo(this.ray.origin);
+       if (d < bestD) {
+         best = it;
+         bestD = d;
+       }
+     }
+-    if (!best) return false;
++    if (!best) {
++      console.info(`[hold] hand ${hand}: laser hit nothing (${this.items.length} holdable)`);
++      return false;
++    }
+ 
+     // attach() keeps the world transform; then size it for the hand and centre it on the grip.
+     const size = this.box.setFromObject(best.root).getSize(new THREE.Vector3());

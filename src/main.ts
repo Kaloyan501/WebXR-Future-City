@@ -276,7 +276,7 @@ async function main(): Promise<void> {
     });
     // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
     ray.addEventListener('squeezestart', () => {
-      if (holdables.tryGrab(i)) return; // a model within reach wins over dragging the plinth
+      if (holdables.tryGrab(i)) return; // a model under the laser wins over dragging the plinth
       ray.getWorldPosition(rayPos);
       if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
       dragRay = ray;
