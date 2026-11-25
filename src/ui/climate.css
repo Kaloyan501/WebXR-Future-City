@@ -535,6 +535,7 @@ dialog p {
 }
 
 .daychart-wrap {
+  max-width: 460px;
   margin: 0;
 }
 
