@@ -11,6 +11,7 @@ import { loadPlacements, occupiedTiles } from './scene/models';
 import { createPins } from './scene/pins';
 import { initDomUI } from './ui/cards-dom';
 import { VrUI, type VrAction } from './ui/cards-vr';
+import { ControllerMenu } from './ui/controller-menu';
 import { installEmulatorIfNeeded } from './xr/emulator';
 import { Holdables } from './xr/holdables';
 
@@ -79,6 +80,8 @@ async function main(): Promise<void> {
   scene.add(plinth, floor);
 
   const vr = new VrUI(content);
+  const controllerMenu = new ControllerMenu();
+  let menuButtonWasPressed = false;
   // Control panel floats behind the model at about eye height, so nobody has to look down for it.
   vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
   scene.add(vr.group);
@@ -303,6 +306,8 @@ async function main(): Promise<void> {
   }
 
   renderer.xr.addEventListener('sessionstart', () => {
+    controllerMenu.hide();
+    menuButtonWasPressed = false;
     stageYaw = plateYaw = 0;
     world.scale.setScalar(VR_SCALE);
   stageOffset.set(0, 0, 0);
@@ -322,6 +327,8 @@ async function main(): Promise<void> {
     xrFrames = 0;
     dragRay = null;
     holdables.releaseAll();
+    controllerMenu.hide();
+    menuButtonWasPressed = false;
     stageYaw = plateYaw = 0;
     world.rotation.y = 0;
     world.scale.setScalar(1);
@@ -377,8 +384,10 @@ async function main(): Promise<void> {
     const session = renderer.xr.getSession();
     if (!session) return;
     const dead = (v: number): number => (Math.abs(v) < STICK_DEADZONE ? 0 : v);
+    let leftControllerFound = false;
     for (const src of session.inputSources) {
       if (src.handedness !== 'left' || !src.gamepad) continue;
+      leftControllerFound = true;
       const x = dead(src.gamepad.axes[2] ?? 0);
       const y = dead(src.gamepad.axes[3] ?? 0);
       if (x !== 0 || y !== 0) {
@@ -394,7 +403,18 @@ async function main(): Promise<void> {
       // xr-standard buttons: 4 = X, 5 = Y on the left Touch controller.
       if (src.gamepad.buttons[5]?.pressed) stageYaw += ROTATE_SPEED * dt;
       if (src.gamepad.buttons[4]?.pressed) stageYaw -= ROTATE_SPEED * dt;
+
+      // Touch Plus exposes the left Menu button at gamepad.buttons[7].
+      const hasTouchPlusProfile = src.profiles.some((profile) => profile.startsWith('meta-quest-touch-plus'));
+      const menuPressed = hasTouchPlusProfile && (src.gamepad.buttons[7]?.pressed ?? false);
+      if (menuPressed && !menuButtonWasPressed) {
+        const sourceIndex = Array.from(session.inputSources).indexOf(src);
+        const controllerRay = sourceIndex >= 0 ? rays[sourceIndex] : undefined;
+        if (controllerRay) controllerMenu.toggle(controllerRay);
+      }
+      menuButtonWasPressed = menuPressed;
     }
+    if (!leftControllerFound) menuButtonWasPressed = false;
   };
 
   renderer.setAnimationLoop((time) => {
