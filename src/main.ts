@@ -20,6 +20,7 @@ const PLINTH_HEIGHT = 0.85;
 const VR_DISTANCE = 1.3;
 const TOOLBAR_BEHIND = 0.7; // metres the toolbar sits behind the plinth centre
 const MOVE_SPEED = 1.0; // m/s at full left-stick deflection
+const HELD_CARD_DISTANCE = 0.6; // metres the info card sits beyond a model held in the hand, measured away from the head
 const GRAB_RADIUS = 1.0; // metres from the plinth centre within which a grip squeeze picks it up
 // Right thumbstick: left/right rotates the model, up/down zooms it.
 const VR_MIN_SCALE = 0.5 / GRID; // ~0.5 m wide
@@ -235,11 +236,10 @@ async function main(): Promise<void> {
   const handModels = new XRHandModelFactory();
   const tempMatrix = new THREE.Matrix4();
   let dragRay: THREE.Object3D | null = null; // controller currently carrying the stage
-  const grips: THREE.Object3D[] = [];
   const rays: THREE.Object3D[] = [];
 
-  // Squeeze next to a placed model to carry it; its pin orb is hidden and the pin's card follows the hand.
-  const holdables = new Holdables(grips, rays, {
+  // Squeeze with the laser on a placed model to pick it up, squeeze again to drop it. While held, its pin orb is hidden and the pin's card floats beyond it.
+  const holdables = new Holdables(rays, {
     onGrab: (pinId) => {
       const item = pinId === undefined ? undefined : pins.byId(pinId);
       if (!item) return;
@@ -276,6 +276,10 @@ async function main(): Promise<void> {
     });
     // Squeeze (grip) near the plinth to pick it up; it follows the controller on the floor plane.
     ray.addEventListener('squeezestart', () => {
+      if (holdables.isHolding(i)) {
+        holdables.release(i); // second squeeze drops it
+        return;
+      }
       if (holdables.tryGrab(i)) return; // a model under the laser wins over dragging the plinth
       ray.getWorldPosition(rayPos);
       if (Math.hypot(rayPos.x - plinth.position.x, rayPos.z - plinth.position.z) > GRAB_RADIUS) return;
@@ -284,7 +288,6 @@ async function main(): Promise<void> {
       dragStartOffset.copy(stageOffset);
     });
     ray.addEventListener('squeezeend', () => {
-      holdables.release(i);
       if (dragRay === ray) dragRay = null;
     });
     scene.add(ray);
@@ -293,7 +296,6 @@ async function main(): Promise<void> {
     const grip = renderer.xr.getControllerGrip(i);
     grip.add(controllerModels.createControllerModel(grip));
     scene.add(grip);
-    grips.push(grip);
 
     const hand = renderer.xr.getHand(i);
     hand.add(handModels.createHandModel(hand, 'mesh'));
@@ -350,6 +352,7 @@ async function main(): Promise<void> {
   const camPos = new THREE.Vector3();
   const camQuat = new THREE.Quaternion();
   const pinPos = new THREE.Vector3();
+  const cardDir = new THREE.Vector3();
   let xrLogged = false;
   let xrFrames = 0;
 
@@ -408,7 +411,12 @@ async function main(): Promise<void> {
       applyStage(); // after all input, so the plinth rotation and offsets are applied every frame
       const open = selectedId === null ? undefined : pins.byId(selectedId);
       if (open) {
-        if (!holdables.heldPosition(open.data.id, pinPos)) open.head.getWorldPosition(pinPos);
+        if (holdables.heldPosition(open.data.id, pinPos)) {
+          // Keep the card out of the user's face: push it past the model, away from the head.
+          pinPos.addScaledVector(cardDir.subVectors(pinPos, camPos).normalize(), HELD_CARD_DISTANCE);
+        } else {
+          open.head.getWorldPosition(pinPos);
+        }
         vr.moveCard(pinPos);
       }
     } else {
