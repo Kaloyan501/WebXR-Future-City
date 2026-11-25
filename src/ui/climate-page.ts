@@ -29,6 +29,7 @@ import { mountNumbersSection } from './sections/numbers.ts';
 import { mountProductionSection } from './sections/production.ts';
 import { mountLifestyleSection } from './sections/lifestyle.ts';
 import { mountMenuSection } from './sections/menu.ts';
+import { setupPresentation } from './presentation.ts';
 import { inputOf, mountSky } from './sky.ts';
 
 const SECTIONS: { id: string; title: string }[] = [
@@ -66,6 +67,8 @@ export interface ClimatePage {
   weather: THREE.Group;
   /** Call every frame from the render loop (also runs in VR). */
   update(dt: number): void;
+  /** Presentation mode asks for the city to turn slowly (true) or stop (false). */
+  onRotate(fn: (on: boolean) => void): void;
   /** The part of the window not covered by the top bar and the two side bars, in CSS pixels. */
   freeArea(): FreeArea;
 }
@@ -102,8 +105,9 @@ export function mountClimatePage(opts: {
   for (const s of SECTIONS) nav.append(el('a', { href: `#${s.id}` }, s.title));
   // Each toggle sits on the side of the bar it controls.
   const sectionsToggle = el('button', { type: 'button', class: 'bar-toggle', 'aria-pressed': 'true', 'aria-controls': 'content' }, 'Раздели');
-  const settingsToggle = el('button', { type: 'button', class: 'bar-toggle bar-toggle-right', 'aria-pressed': 'true', 'aria-controls': 'panel' }, 'Настройки');
-  topnav.append(sectionsToggle, brand, nav, settingsToggle);
+  const settingsToggle = el('button', { type: 'button', class: 'bar-toggle', 'aria-pressed': 'true', 'aria-controls': 'panel' }, 'Настройки');
+  const presentButton = el('button', { type: 'button', class: 'button present-button', 'aria-pressed': 'false' }, 'Представяне');
+  topnav.append(sectionsToggle, brand, nav, presentButton, settingsToggle);
 
   // Left: the scrolling section sheets.
   const content = el('main', { id: 'content' });
@@ -196,17 +200,24 @@ export function mountClimatePage(opts: {
     window.dispatchEvent(new Event('resize'));
     if (performance.now() < slideUntil) requestAnimationFrame(followSlide);
   };
-  const bindToggle = (button: HTMLButtonElement, cls: string) => {
-    button.addEventListener('click', () => {
-      const hidden = body.classList.toggle(cls);
-      button.setAttribute('aria-pressed', String(!hidden));
-      const running = performance.now() < slideUntil;
-      slideUntil = performance.now() + (reducedMotion ? 0 : SLIDE_MS);
-      if (!running) followSlide();
-    });
+  const toggleFor = { 'hide-sections': sectionsToggle, 'hide-settings': settingsToggle } as const;
+  /** Shows or hides one side bar; returns whether it was hidden before. */
+  const setBar = (cls: keyof typeof toggleFor, hidden: boolean): boolean => {
+    const was = body.classList.contains(cls);
+    if (was === hidden) return was;
+    body.classList.toggle(cls, hidden);
+    toggleFor[cls].setAttribute('aria-pressed', String(!hidden));
+    const running = performance.now() < slideUntil;
+    slideUntil = performance.now() + (reducedMotion ? 0 : SLIDE_MS);
+    if (!running) followSlide();
+    return was;
   };
-  bindToggle(sectionsToggle, 'hide-sections');
-  bindToggle(settingsToggle, 'hide-settings');
+  sectionsToggle.addEventListener('click', () => setBar('hide-sections', !body.classList.contains('hide-sections')));
+  settingsToggle.addEventListener('click', () => setBar('hide-settings', !body.classList.contains('hide-settings')));
+
+  // Presentation mode: hide both bars, play the scenarios, turn the city.
+  let rotateListener: (on: boolean) => void = () => {};
+  setupPresentation({ store, scenarios, button: presentButton, setBar, rotate: (on) => rotateListener(on), reducedMotion });
   // One last re-fit when a slide really ends, so the city settles exactly in place.
   for (const bar of [content, panel]) {
     bar.addEventListener('transitionend', (e) => {
@@ -251,5 +262,13 @@ export function mountClimatePage(opts: {
   window.addEventListener('resize', placeXrBar);
   placeXrBar();
 
-  return { store, freeArea, weather: weather3d.group, update: (dt) => weather3d.update(dt) };
+  return {
+    store,
+    freeArea,
+    weather: weather3d.group,
+    update: (dt) => weather3d.update(dt),
+    onRotate: (fn) => {
+      rotateListener = fn;
+    },
+  };
 }

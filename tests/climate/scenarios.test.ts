@@ -60,3 +60,11 @@ test('edit breaks match', () => {
 test('apply keeps population', () => {
   assert.equal('population' in applyScenario(byId('megacity')), false);
 });
+
+test('presentation steps through the scenarios and wraps around', async () => {
+  const { nextScenarioId } = await import('../../src/climate/scenarios.ts');
+  const ids = scenarios.map((s) => s.id);
+  assert.equal(nextScenarioId(ids, 'temperate'), 'hot-summer');
+  assert.equal(nextScenarioId(ids, 'coastal'), 'temperate');
+  assert.equal(nextScenarioId(ids, 'unknown'), 'temperate');
+});

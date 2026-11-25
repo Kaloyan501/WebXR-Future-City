@@ -122,7 +122,12 @@ async function main(): Promise<void> {
   controls.minZoom = 0.6;
   controls.maxZoom = 3;
   controls.update();
-  if (import.meta.env.DEV) Object.assign(window, { __city: { scene, sun, camera } });
+  if (import.meta.env.DEV) Object.assign(window, { __city: { scene, sun, camera, controls } });
+  // Presentation mode turns the city slowly.
+  page.onRotate((on) => {
+    controls.autoRotate = on;
+    controls.autoRotateSpeed = 0.8;
+  });
 
   function resize(): void {
     const w = window.innerWidth;

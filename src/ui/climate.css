@@ -629,8 +629,15 @@ dialog p {
   color: var(--green);
 }
 
-.bar-toggle-right {
+.present-button {
   margin-left: auto;
+  padding: 7px 14px;
+  font-size: 15px;
+}
+
+.present-button[aria-pressed='true'] {
+  background: var(--warn);
+  color: var(--ink);
 }
 
 .bar-toggle {
@@ -1372,4 +1379,66 @@ dialog p {
   width: 20px;
   height: 20px;
   accent-color: var(--green);
+}
+
+/* ---------- Presentation mode caption ---------- */
+
+.presenting {
+  position: fixed;
+  left: 32px;
+  bottom: 32px;
+  z-index: 6;
+  max-width: min(720px, calc(100vw - 64px));
+  padding: 18px 24px;
+  background: var(--sheet);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+}
+
+.presenting[hidden] {
+  display: none;
+}
+
+.presenting p {
+  margin: 0;
+}
+
+.presenting-name {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1.15;
+}
+
+.presenting-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin-top: 8px;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.presenting-label {
+  display: block;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.presenting-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.presenting-dots span {
+  width: 28px;
+  height: 6px;
+  background: rgba(31, 77, 58, 0.18);
+  border-radius: 3px;
+  transition: background-color 400ms ease;
+}
+
+.presenting-dots span.on {
+  background: var(--green);
 }

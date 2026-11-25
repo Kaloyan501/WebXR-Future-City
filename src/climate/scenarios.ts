@@ -40,3 +40,9 @@ export const SLIDER_RANGES: Record<Exclude<SettingKey, 'windDir'>, { min: number
   energy: { min: 0, max: 100, step: 1 },
   population: { min: 10000, max: 1000000, step: 10000 },
 };
+
+/** The scenario after `currentId`, wrapping around; the first one if `currentId` is not in the list. */
+export function nextScenarioId(ids: string[], currentId: string): string {
+  const i = ids.indexOf(currentId);
+  return ids[i < 0 ? 0 : (i + 1) % ids.length];
+}
