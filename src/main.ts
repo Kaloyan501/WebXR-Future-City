@@ -60,6 +60,7 @@ async function main(): Promise<void> {
   // Everything that belongs to the model lives in `world`, which is scaled in VR.
   const world = new THREE.Group();
   scene.add(world);
+  world.add(page.weather);
   const city = buildCity(content.scenarios[0].waterLevel, occupiedTiles(content.placements));
   const pins = createPins(content.pins);
   world.add(city.group);
@@ -469,6 +470,7 @@ async function main(): Promise<void> {
     }
     holdables.update(dt);
     city.update(dt);
+    page.update(dt);
     pins.billboard(camQuat);
     vr.update(camPos);
     renderer.render(scene, camera);

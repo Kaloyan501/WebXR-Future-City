@@ -20,6 +20,7 @@ import type { Scenario } from '../climate/scenarios.ts';
 import { visualsFor } from '../climate/visuals.ts';
 import { weatherLook } from '../climate/weatherLook.ts';
 import { applyWeather } from '../scene/weather.ts';
+import { createWeather3D } from '../scene/weather3d.ts';
 import { mountPanel } from './climate-panel.ts';
 import { mountBiologySection } from './sections/biology.ts';
 import { mountCitySection } from './sections/city.ts';
@@ -61,6 +62,10 @@ export interface FreeArea {
 
 export interface ClimatePage {
   store: Store;
+  /** Rain, snow and clouds; add it to the model's world group so it scales in VR. */
+  weather: THREE.Group;
+  /** Call every frame from the render loop (also runs in VR). */
+  update(dt: number): void;
   /** The part of the window not covered by the top bar and the two side bars, in CSS pixels. */
   freeArea(): FreeArea;
 }
@@ -84,11 +89,9 @@ export function mountClimatePage(opts: {
   const body = document.body;
   const canvas = opts.renderer.domElement;
 
-  // Sky behind the transparent 3D canvas, rain and snow in front of it.
+  // Sky colour behind the transparent 3D canvas.
   const bg = el('div', { id: 'bg', 'aria-hidden': 'true' });
-  const particles = el('canvas', { id: 'particles', 'aria-hidden': 'true' });
   body.prepend(bg);
-  canvas.after(particles);
 
   // Top bar: the existing title, the section links, the two bar toggles.
   const topnav = el('header', { class: 'topnav' });
@@ -151,7 +154,25 @@ export function mountClimatePage(opts: {
   mountMenuSection(section('menu'), store, mealsData as MealsData);
   mountNumbersSection(section('numbers'), store);
   mountLifestyleSection(content.querySelector<HTMLElement>('#lifestyle')!, store, diseasesData as DiseaseDef[], reducedMotion);
-  mountSky(bg, particles, store, { reducedMotion });
+  mountSky(bg, store, { reducedMotion });
+
+  // Rain, snow and clouds over the 3D city (also in VR).
+  const weather3d = createWeather3D();
+  const applyWeather3d = () => {
+    const s = store.get();
+    const v = visualsFor(inputOf(s));
+    weather3d.set({
+      rain: reducedMotion ? 0 : v.rain,
+      snow: reducedMotion ? 0 : v.snowfall,
+      windX: inputOf(s).windX,
+      windSpeed: s.windSpeed,
+      cloudiness: Math.min(1, Math.max(0, (s.humidity - 35) / 50)),
+      cloudColor: v.cloudColor,
+    });
+  };
+  store.subscribe(applyWeather3d);
+  opts.renderer.xr.addEventListener('sessionstart', () => weather3d.setVR(true));
+  opts.renderer.xr.addEventListener('sessionend', () => weather3d.setVR(false));
 
   // Climate weather on the 3D scene (sunlight, haze); re-applied when entering or leaving VR.
   const applyScene = () => {
@@ -230,5 +251,5 @@ export function mountClimatePage(opts: {
   window.addEventListener('resize', placeXrBar);
   placeXrBar();
 
-  return { store, freeArea };
+  return { store, freeArea, weather: weather3d.group, update: (dt) => weather3d.update(dt) };
 }
