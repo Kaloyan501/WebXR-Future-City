@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { DEFAULT_STATE } from '../core/state.ts';
-import { applyScenario, matchesScenario, SLIDER_RANGES, type Scenario } from '../core/scenarios.ts';
+import { DEFAULT_STATE } from '../../src/climate/state.ts';
+import { applyScenario, matchesScenario, SLIDER_RANGES, type Scenario } from '../../src/climate/scenarios.ts';
 
 const scenarios: Scenario[] = JSON.parse(
-  readFileSync(new URL('../data/scenarios.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../content/climate-scenarios.json', import.meta.url), 'utf8'),
 );
 const byId = (id: string) => scenarios.find((s) => s.id === id)!;
 const DIRS = ['С', 'СИ', 'И', 'ЮИ', 'Ю', 'ЮЗ', 'З', 'СЗ', null];

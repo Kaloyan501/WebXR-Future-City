@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_STATE } from '../core/state.ts';
-import { visualsFor, windXOf, type VisualInput } from '../core/visuals.ts';
+import { DEFAULT_STATE } from '../../src/climate/state.ts';
+import { visualsFor, windXOf, type VisualInput } from '../../src/climate/visuals.ts';
 
 const base: VisualInput = {
   temp: DEFAULT_STATE.temp,

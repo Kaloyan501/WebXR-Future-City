@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_STATE, type CityState } from '../core/state.ts';
-import { levelsOf, formatSetting } from '../core/levels.ts';
+import { DEFAULT_STATE, type CityState } from '../../src/climate/state.ts';
+import { levelsOf, formatSetting } from '../../src/climate/levels.ts';
 
 const at = (patch: Partial<CityState>) => levelsOf({ ...DEFAULT_STATE, ...patch });
 
@@ -65,7 +65,7 @@ test('format population million', () => assert.equal(fmt('population', { populat
 test('format negative temp uses a real minus', () => assert.equal(fmt('temp', { temp: -5 }), '−5 °C · Студено'));
 
 test('warning levels are the adverse ones only', async () => {
-  const { isWarning } = await import('../core/levels.ts');
+  const { isWarning } = await import('../../src/climate/levels.ts');
   assert.equal(isWarning('temp', at({ temp: 41 })), true);
   assert.equal(isWarning('temp', at({ temp: 18 })), false);
   assert.equal(isWarning('temp', at({ temp: -5 })), false);

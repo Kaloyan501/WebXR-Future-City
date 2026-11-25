@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateSkyline, SCENE_W } from '../ui/skyline.ts';
+import { generateSkyline, SCENE_W } from '../../src/ui/skyline.ts';
 
 test('same seed, same skyline', () => {
   assert.deepEqual(generateSkyline(2100), generateSkyline(2100));

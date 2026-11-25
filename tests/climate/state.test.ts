@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createStore, DEFAULT_STATE, type CityState } from '../core/state.ts';
+import { createStore, DEFAULT_STATE, type CityState } from '../../src/climate/state.ts';
 
 test('set merges', () => {
   const store = createStore(DEFAULT_STATE);

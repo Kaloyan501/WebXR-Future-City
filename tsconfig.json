@@ -20,6 +20,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "city2100"],
-  "exclude": ["city2100/tests"]
+  "include": ["src"]
 }

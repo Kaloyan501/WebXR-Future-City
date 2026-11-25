@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dayCurve } from '../core/dayCurve.ts';
+import { dayCurve } from '../../src/climate/dayCurve.ts';
 
 const span = (pts: { temp: number }[]) => Math.max(...pts.map((p) => p.temp)) - Math.min(...pts.map((p) => p.temp));
 
