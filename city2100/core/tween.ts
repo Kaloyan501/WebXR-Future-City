@@ -1,7 +1,7 @@
 // Smoothly moves a set of numbers to new targets (~0.8 s), so the background never jumps.
 // Retargeting mid-flight continues from wherever the values are now, with a single frame loop.
 
-export interface Tween<T extends Record<string, number>> {
+export interface Tween<T extends { [K in keyof T]: number }> {
   to(target: T): void;
   snap(target: T): void;
   current(): T;
@@ -9,7 +9,7 @@ export interface Tween<T extends Record<string, number>> {
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-export function createTween<T extends Record<string, number>>(
+export function createTween<T extends { [K in keyof T]: number }>(
   initial: T,
   durationMs: number,
   onFrame: (v: T) => void,
