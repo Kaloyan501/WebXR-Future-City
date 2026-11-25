@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 const HOLD_SIZE = 0.15; // metres: longest side of a model while it is in the hand
-const HOLD_OFFSET = new THREE.Vector3(0, 0.05, -0.3); // model centre relative to the laser origin: floats ahead of the controller, clear of its mesh
+const HOLD_OFFSET = new THREE.Vector3(0, 0.025, -0.15); // model centre relative to the laser origin: floats ahead of the controller, clear of its mesh
 const LASER_LENGTH = 3; // metres; matches the line drawn on each controller
 const BOX_PAD = 0.01; // metres of slack around a model's bounds, so thin parts are still easy to hit
 const RETURN_RATE = 14; // 1/s, exponential ease back to the tile

@@ -20,7 +20,7 @@ const PLINTH_HEIGHT = 0.85;
 const VR_DISTANCE = 1.3;
 const TOOLBAR_BEHIND = 0.7; // metres the toolbar sits behind the plinth centre
 const MOVE_SPEED = 1.0; // m/s at full left-stick deflection
-const HELD_CARD_DISTANCE = 0.6; // metres the info card sits beyond a model held in the hand, measured away from the head
+const HELD_CARD_DISTANCE = 0.3; // metres the info card sits beyond a model held in the hand, measured away from the head
 const GRAB_RADIUS = 1.0; // metres from the plinth centre within which a grip squeeze picks it up
 // Right thumbstick: left/right rotates the model, up/down zooms it.
 const VR_MIN_SCALE = 0.5 / GRID; // ~0.5 m wide
