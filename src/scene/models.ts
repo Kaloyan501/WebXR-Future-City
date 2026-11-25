@@ -60,23 +60,22 @@ async function place(p: Placement): Promise<THREE.Object3D> {
   }
 
   const inner = (await load(p.model)).clone(true);
-  // The reactor can be rotated to arbitrary angles while held. Render both sides
-  // of its surfaces so the underside does not disappear due to back-face culling.
-  if (p.model === 'models/nuclear.glb') {
-    inner.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
+  // Held models can be rotated to arbitrary angles, exposing the back faces of
+  // single-sided geometry. Make every mesh render both sides while keeping the
+  // cached GLTF materials untouched.
+  inner.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
 
-      const makeDoubleSided = (material: THREE.Material): THREE.Material => {
-        const copy = material.clone();
-        copy.side = THREE.DoubleSide;
-        return copy;
-      };
+    const makeDoubleSided = (material: THREE.Material): THREE.Material => {
+      const copy = material.clone();
+      copy.side = THREE.DoubleSide;
+      return copy;
+    };
 
-      object.material = Array.isArray(object.material)
-        ? object.material.map(makeDoubleSided)
-        : makeDoubleSided(object.material);
-    });
-  }
+    object.material = Array.isArray(object.material)
+      ? object.material.map(makeDoubleSided)
+      : makeDoubleSided(object.material);
+  });
 
   inner.rotation.y = THREE.MathUtils.degToRad(p.rotation ?? 0); // rotate first: it changes the footprint
   const holder = new THREE.Group();
