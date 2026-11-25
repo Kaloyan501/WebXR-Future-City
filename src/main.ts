@@ -56,7 +56,7 @@ async function main(): Promise<void> {
   scene.add(world);
   const city = buildCity(content.scenarios[0].waterLevel, occupiedTiles(content.placements));
   const pins = createPins(content.pins);
-  world.add(city.group, pins.group);
+  world.add(city.group);
   //world.add(pins.group);
   // Models load in the background, so a slow or missing file never blocks the UI.
   const placed = loadPlacements(content.placements).then((models) => {
