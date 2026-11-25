@@ -14,6 +14,7 @@ import { VrUI, type VrAction } from './ui/cards-vr';
 import { ControllerMenu } from './ui/controller-menu';
 import { installEmulatorIfNeeded } from './xr/emulator';
 import { Holdables } from './xr/holdables';
+import { mountClimatePage } from './ui/climate-page';
 
 // --- VR placement: the 24-tile plate becomes a ~1 m model on a table-height plinth ---
 const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
@@ -47,10 +48,14 @@ async function main(): Promise<void> {
   const scene = new THREE.Scene();
   scene.background = null;
   renderer.setClearColor(0x000000, 0);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x445566, 1.1);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffffff, 1.8);
   sun.position.set(10, 20, 8);
   scene.add(sun);
+
+  // Град 2100: settings panel, sections and live sky around the city; the settings also drive sunlight and haze.
+  const page = mountClimatePage({ renderer, scene, sun, hemi });
 
   // Everything that belongs to the model lives in `world`, which is scaled in VR.
   const world = new THREE.Group();
@@ -116,6 +121,7 @@ async function main(): Promise<void> {
   controls.minZoom = 0.6;
   controls.maxZoom = 3;
   controls.update();
+  if (import.meta.env.DEV) Object.assign(window, { __city: { scene, sun, camera } });
 
   function resize(): void {
     const w = window.innerWidth;
@@ -123,12 +129,15 @@ async function main(): Promise<void> {
     renderer.setSize(w, h, false);
     const aspect = w / h;
     // Keep the whole plate visible on narrow (portrait) screens too.
-    const halfH = Math.max(VIEW_HALF_HEIGHT, (GRID * 0.8) / aspect);
+    let halfH = Math.max(VIEW_HALF_HEIGHT, (GRID * 0.8) / aspect);
+    // Fit and centre the city in the space the Град 2100 side bars leave free.
+    const free = page.freeArea();
+    halfH *= Math.max(1, (0.84 * w) / Math.max(free.right - free.left, 200)) * (h / Math.max(free.bottom - free.top, 200));
     camera.left = -halfH * aspect;
     camera.right = halfH * aspect;
     camera.top = halfH;
     camera.bottom = -halfH;
-    camera.updateProjectionMatrix();
+    camera.setViewOffset(w, h, w / 2 - (free.left + free.right) / 2, h / 2 - (free.top + free.bottom) / 2, w, h);
   }
   window.addEventListener('resize', resize);
   resize();

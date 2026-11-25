@@ -67,9 +67,9 @@ export class VrUI {
     this.group.add(this.toolbar);
 
     const layers: [string, Layer][] = [
-      ['All', 'all'],
-      ['Geography', 'geo'],
-      ['Biology', 'bio'],
+      ['Всички', 'all'],
+      ['География', 'geo'],
+      ['Биология', 'bio'],
     ];
     layers.forEach(([label, layer], i) => {
       const b = this.makeButton(label, { type: 'layer', layer }, (i - 1) * 0.15, 0.03);
@@ -173,7 +173,7 @@ export class VrUI {
     this.cardTags.color = TAG_COLOR[pin.tags[0]];
     this.cardTitle.text = `${pin.id}. ${pin.title}`;
     this.cardBody.text = this.showingDetails ? pin.details : pin.summary;
-    this.cardHint.text = this.showingDetails ? 'Point at the card and select to go back' : 'Point at the card and select for more';
+    this.cardHint.text = this.showingDetails ? 'Насочи към картата и избери, за да се върнеш' : 'Насочи към картата и избери за повече';
     for (const t of [this.cardTags, this.cardTitle, this.cardBody, this.cardHint]) t.sync();
     // Body starts below the title; two-line titles need a bit more room.
     this.cardBody.position.y = pin.title.length > 26 ? 0.075 : 0.105;

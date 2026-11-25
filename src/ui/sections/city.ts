@@ -1,10 +1,10 @@
 // Section 1 "Градът": the city's name and story, the current climate readings,
 // and a day/night temperature chart. Everything updates from the shared state.
-import type { CityState, Store } from '../../core/state.ts';
-import { dayCurve } from '../../core/dayCurve.ts';
-import { formatNumber, formatSetting, isWarning, levelsOf, type Levels } from '../../core/levels.ts';
-import { matchesScenario, type Scenario } from '../../core/scenarios.ts';
-import { openScenarioPicker } from '../scenarioPicker.ts';
+import type { CityState, Store } from '../../climate/state.ts';
+import { dayCurve } from '../../climate/dayCurve.ts';
+import { formatNumber, formatSetting, isWarning, levelsOf, type Levels } from '../../climate/levels.ts';
+import { matchesScenario, type Scenario } from '../../climate/scenarios.ts';
+import { openScenarioPicker } from '../scenario-picker.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -104,11 +104,11 @@ export function mountCitySection(section: HTMLElement, store: Store, scenarios: 
 
   const head = el('div', 'city-head');
   const titleWrap = el('div');
-  const h1 = el('h1');
-  h1.id = 'city-title';
+  const heading = el('h2');
+  heading.id = 'city-title';
   const modified = el('p', 'city-modified', 'Стойностите са променени ръчно.');
   const desc = el('p', 'city-desc');
-  titleWrap.append(h1, modified, desc);
+  titleWrap.append(heading, modified, desc);
   const load = el('button', 'button', 'Зареди сценарий');
   load.type = 'button';
   load.addEventListener('click', () => openScenarioPicker(store, scenarios));
@@ -138,7 +138,7 @@ export function mountCitySection(section: HTMLElement, store: Store, scenarios: 
   store.subscribe((s) => {
     const lv = levelsOf(s);
     const sc = scenarios.find((x) => x.id === s.scenarioId);
-    h1.textContent = sc?.name ?? 'Град 2100';
+    heading.textContent = sc?.name ?? 'Град 2100';
     desc.textContent = sc?.description ?? '';
     modified.hidden = !sc || matchesScenario(s, sc);
     for (const { r, value, level } of rows) {

@@ -1,6 +1,6 @@
 // The "Зареди сценарий" list. Picking a case fills every slider at once.
-import type { Store } from '../core/state.ts';
-import { applyScenario, type Scenario } from '../core/scenarios.ts';
+import type { Store } from '../climate/state.ts';
+import { applyScenario, type Scenario } from '../climate/scenarios.ts';
 
 export function openScenarioPicker(store: Store, scenarios: Scenario[]): void {
   const dialog = document.querySelector<HTMLDialogElement>('#scenario-dialog')!;

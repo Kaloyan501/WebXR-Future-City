@@ -1,8 +1,8 @@
 // The settings panel on the right: ten controls that drive the whole page.
-import type { CityState, Store, WindDir } from '../core/state.ts';
-import { formatSetting, isWarning, levelsOf, type Levels, type SettingKey } from '../core/levels.ts';
-import { SLIDER_RANGES, type Scenario } from '../core/scenarios.ts';
-import { openScenarioPicker } from './scenarioPicker.ts';
+import type { CityState, Store, WindDir } from '../climate/state.ts';
+import { formatSetting, isWarning, levelsOf, type Levels, type SettingKey } from '../climate/levels.ts';
+import { SLIDER_RANGES, type Scenario } from '../climate/scenarios.ts';
+import { openScenarioPicker } from './scenario-picker.ts';
 
 type SliderKey = Exclude<SettingKey, 'windDir'>;
 
