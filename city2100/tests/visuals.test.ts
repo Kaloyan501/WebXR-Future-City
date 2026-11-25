@@ -106,3 +106,19 @@ test('dry desaturates', () => {
   assert.ok(v({ humidity: 20 }).saturation < 1);
   assert.equal(v({ humidity: 55 }).saturation, 1);
 });
+
+const saturationOf = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const max = Math.max(...c);
+  return max === 0 ? 0 : (max - Math.min(...c)) / max;
+};
+
+test('rain greys the sky and darkens clouds', () => {
+  const dry = v({ temp: 29, humidity: 55 });
+  const storm = v({ temp: 29, humidity: 90 });
+  assert.ok(saturationOf(storm.skyTop) < saturationOf(dry.skyTop) * 0.8, `${dry.skyTop} vs ${storm.skyTop}`);
+  assert.equal(dry.cloudColor, '#ffffff');
+  assert.notEqual(storm.cloudColor, '#ffffff');
+  assert.ok(storm.sunGlow < dry.sunGlow);
+});

@@ -18,6 +18,7 @@ export interface VisualInput {
 export interface Visuals {
   skyTop: string;
   skyBottom: string;
+  cloudColor: string;
   sunRadius: number;
   sunGlow: number;
   shadowOpacity: number;
@@ -64,6 +65,8 @@ const SKY_STOPS: { t: number; top: string; bottom: string }[] = [
   { t: 45, top: '#d9783a', bottom: '#f4c58a' },
 ];
 const SMOG_COLOR = '#8c8068';
+const OVERCAST_COLOR = '#9aa6ad';
+const STORM_CLOUD = '#a7b0b7';
 const RIVER_DRY = '#9b8a62';
 const RIVER_FULL = '#3d7fb8';
 
@@ -104,13 +107,18 @@ function skyAt(temp: number): { top: string; bottom: string } {
 export function visualsFor(v: VisualInput): Visuals {
   // Strong wind blows part of the smog away.
   const smog = clamp01((v.aqi - 40) / 220) * (1 - 0.5 * clamp01(v.windSpeed / 60));
+  // Humid, rainy weather is overcast: a greyer sky, darker clouds and a weaker sun glow.
+  const overcast = clamp01((v.humidity - 70) / 25);
   const sky = skyAt(v.temp);
+  const top = mixHex(sky.top, OVERCAST_COLOR, overcast * 0.65);
+  const bottom = mixHex(sky.bottom, OVERCAST_COLOR, overcast * 0.5);
 
   return {
-    skyTop: mixHex(sky.top, SMOG_COLOR, smog * 0.7),
-    skyBottom: mixHex(sky.bottom, SMOG_COLOR, smog * 0.7),
+    skyTop: mixHex(top, SMOG_COLOR, smog * 0.7),
+    skyBottom: mixHex(bottom, SMOG_COLOR, smog * 0.7),
+    cloudColor: mixHex('#ffffff', STORM_CLOUD, overcast),
     sunRadius: 28 + 4 * v.uv,
-    sunGlow: 0.15 + 0.04 * v.uv,
+    sunGlow: (0.15 + 0.04 * v.uv) * (1 - 0.6 * overcast),
     shadowOpacity: 0.05 + 0.04 * v.uv,
     cloudVx: v.windX * (4 + 1.6 * v.windSpeed),
     treeBendDeg: v.windX * Math.min(v.windSpeed, 80) * 0.3,

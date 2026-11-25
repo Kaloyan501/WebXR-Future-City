@@ -216,6 +216,7 @@ export function mountBackground(root: HTMLElement, store: Store, opts: { reduced
   const sunDisc = $<SVGCircleElement>('#sun-disc');
   const sunGlow = $<SVGCircleElement>('#sun-glow');
   const far = $<SVGGElement>('#far');
+  const cloudLayer = $<SVGGElement>('#clouds');
   const smog = $<SVGRectElement>('#smog');
   const smogFront = $<SVGRectElement>('#smog-front');
   const fog = $<SVGRectElement>('#fog');
@@ -264,6 +265,7 @@ export function mountBackground(root: HTMLElement, store: Store, opts: { reduced
     sunGlow.setAttribute('r', (vis.sunRadius * 3.2).toFixed(1));
     sunGlow.setAttribute('opacity', Math.min(1, vis.sunGlow * 1.6).toFixed(3));
     far.setAttribute('fill', mixHex('#7d93a6', vis.skyBottom, 0.35));
+    cloudLayer.setAttribute('fill', vis.cloudColor);
     smog.setAttribute('opacity', vis.smog.toFixed(3));
     smogFront.setAttribute('opacity', (vis.smog * 0.5).toFixed(3));
     fog.setAttribute('opacity', vis.fog.toFixed(3));
