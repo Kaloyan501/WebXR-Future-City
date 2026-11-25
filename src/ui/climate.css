@@ -781,3 +781,281 @@ dialog p {
   opacity: 1 !important;
   width: auto !important;
 }
+
+/* ---------- Shared section bits ---------- */
+
+.section-intro {
+  margin: 0 0 16px;
+}
+
+.sheet h3 {
+  margin: 24px 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.button-quiet {
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 16px;
+  color: var(--green);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.button-quiet:hover {
+  border-color: var(--green);
+}
+
+/* ---------- Дневно меню ---------- */
+
+.menu-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.menu-table th,
+.menu-table td {
+  padding: 8px 6px;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid var(--line);
+}
+
+.menu-table thead th {
+  font-size: 16px;
+  color: var(--green);
+  border-top: 0;
+}
+
+.menu-table thead th:first-child,
+.menu-table tbody th {
+  width: 22%;
+}
+
+.menu-table tbody th {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dish {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.dish:hover {
+  border-color: var(--green);
+}
+
+.dish-name {
+  display: block;
+  font-weight: 700;
+}
+
+.dish-drink {
+  display: block;
+  color: var(--muted);
+}
+
+.dish-changed {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--green);
+  border-radius: 4px;
+}
+
+.menu-notes {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  font-size: 16px;
+}
+
+.menu-notes li {
+  margin: 4px 0;
+}
+
+.note-warn {
+  padding: 2px 8px;
+  margin-left: -8px;
+  background: rgba(224, 122, 46, 0.18);
+  border-left: 4px solid var(--warn);
+  list-style: none;
+}
+
+.vote-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vote-result {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+.dish-dialog {
+  width: min(760px, 92vw);
+}
+
+.dish-table {
+  width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dish-table th,
+.dish-table td {
+  padding: 6px 8px;
+  text-align: right;
+  border-top: 1px solid var(--line);
+}
+
+.dish-table th:first-child,
+.dish-table td:first-child {
+  text-align: left;
+}
+
+.dish-table tfoot {
+  font-weight: 800;
+}
+
+.pros-cons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.pros-cons h3 {
+  margin: 8px 0 4px;
+  font-size: 18px;
+}
+
+.pros-cons ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 16px;
+}
+
+.dish-note {
+  margin: 12px 0 16px;
+  font-size: 14px;
+}
+
+/* ---------- Начин на живот ---------- */
+
+.lifespan {
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+}
+
+.lifespan-value {
+  font-size: 72px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lifespan-unit {
+  font-size: 28px;
+}
+
+.factors {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.factors li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+
+.factors b {
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-minus {
+  color: var(--ink);
+}
+
+.delta-plus {
+  color: var(--green);
+}
+
+.disclaimer {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.risks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risk {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.risk-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.risk-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 6px 0 4px;
+}
+
+.risk-bar span {
+  height: 8px;
+  background: rgba(31, 77, 58, 0.14);
+  border-radius: 4px;
+  transition: background-color 400ms ease;
+}
+
+.risk-bar span.on {
+  background: var(--green);
+}
+
+.risk-2 .risk-bar span.on {
+  background: var(--warn);
+}
+
+.risk-why {
+  margin: 0;
+  font-size: 15px;
+}

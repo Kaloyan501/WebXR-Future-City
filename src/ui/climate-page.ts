@@ -5,6 +5,10 @@
 import './climate.css';
 import type * as THREE from 'three';
 import climateScenarios from '../../content/climate-scenarios.json';
+import diseasesData from '../../content/diseases.json';
+import mealsData from '../../content/meals.json';
+import type { DiseaseDef } from '../climate/health.ts';
+import type { MealsData } from '../climate/menu.ts';
 import { createStore, DEFAULT_STATE, type Store } from '../climate/state.ts';
 import type { Scenario } from '../climate/scenarios.ts';
 import { visualsFor } from '../climate/visuals.ts';
@@ -12,6 +16,8 @@ import { weatherLook } from '../climate/weatherLook.ts';
 import { applyWeather } from '../scene/weather.ts';
 import { mountPanel } from './climate-panel.ts';
 import { mountCitySection } from './sections/city.ts';
+import { mountLifestyleSection } from './sections/lifestyle.ts';
+import { mountMenuSection } from './sections/menu.ts';
 import { inputOf, mountSky } from './sky.ts';
 
 const SECTIONS: { id: string; title: string; pending?: string }[] = [
@@ -19,9 +25,9 @@ const SECTIONS: { id: string; title: string; pending?: string }[] = [
   { id: 'production', title: 'География и производство', pending: 'кои начини за отглеждане на храна са възможни и какво струват.' },
   { id: 'biology', title: 'Биология', pending: 'растения и животни, които виреят при тези условия.' },
   { id: 'foods', title: 'Храни', pending: 'хранителните вещества и типичното ядене за този климат.' },
-  { id: 'menu', title: 'Дневно меню', pending: 'Меню А срещу Меню Б за четири хранения.' },
+  { id: 'menu', title: 'Дневно меню' },
   { id: 'numbers', title: 'Храната в числа', pending: 'колко плодове и зеленчуци са нужни на града и пътят от фермата до масата.' },
-  { id: 'lifestyle', title: 'Начин на живот', pending: 'продължителност на живота и риск от болести.' },
+  { id: 'lifestyle', title: 'Начин на живот' },
 ];
 
 // three.js writes these into its VR/AR buttons; the site is in Bulgarian.
@@ -132,6 +138,8 @@ export function mountClimatePage(opts: {
 
   const citySection = content.querySelector<HTMLElement>('#city')!;
   mountCitySection(citySection, store, scenarios);
+  mountMenuSection(content.querySelector<HTMLElement>('#menu')!, store, mealsData as MealsData);
+  mountLifestyleSection(content.querySelector<HTMLElement>('#lifestyle')!, store, diseasesData as DiseaseDef[], reducedMotion);
   mountSky(bg, particles, store, { reducedMotion });
 
   // Climate weather on the 3D scene (sunlight, haze); re-applied when entering or leaving VR.
