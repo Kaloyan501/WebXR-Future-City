@@ -17,7 +17,7 @@ interface VrButton {
 const BTN_IDLE = 0x2a313c;
 const BTN_ACTIVE = 0x3b6ea8;
 
-function makeText(
+export function makeText(
   str: string,
   size: number,
   color: number,

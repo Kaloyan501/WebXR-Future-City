@@ -125,7 +125,22 @@ h3 {
 
 .topnav nav {
   display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
   gap: 24px;
+  /* On narrower screens the links scroll sideways instead of pushing the buttons off-screen. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topnav nav::-webkit-scrollbar {
+  display: none;
+}
+
+.topnav > .bar-toggle,
+.topnav > .present-button,
+.topnav > .brand {
+  flex: none;
 }
 
 .topnav nav a {

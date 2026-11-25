@@ -15,6 +15,7 @@ import { ControllerMenu } from './ui/controller-menu';
 import { installEmulatorIfNeeded } from './xr/emulator';
 import { Holdables } from './xr/holdables';
 import { mountClimatePage } from './ui/climate-page';
+import { PANEL_H, PANEL_W } from './ui/vr-climate-menu';
 
 // --- VR placement: the 24-tile plate becomes a ~1 m model on a table-height plinth ---
 const VR_SCALE = 0.96 / GRID; // the plate is ~0.96 m wide, whatever GRID is
@@ -86,7 +87,8 @@ async function main(): Promise<void> {
   scene.add(plinth, floor);
 
   const vr = new VrUI(content);
-  const controllerMenu = new ControllerMenu();
+  // The A-button menu shows the Град 2100 climate panel (scenario switcher and key values).
+  const controllerMenu = new ControllerMenu({ object: page.vrMenu.panel, width: PANEL_W, height: PANEL_H });
   let menuButtonWasPressed = false;
   // Control panel floats behind the model at about eye height, so nobody has to look down for it.
   vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
@@ -122,7 +124,7 @@ async function main(): Promise<void> {
   controls.minZoom = 0.6;
   controls.maxZoom = 3;
   controls.update();
-  if (import.meta.env.DEV) Object.assign(window, { __city: { scene, sun, camera, controls } });
+  if (import.meta.env.DEV) Object.assign(window, { __city: { scene, sun, camera, controls, renderer, controllerMenu, vrMenu: page.vrMenu } });
   // Presentation mode turns the city slowly.
   page.onRotate((on) => {
     controls.autoRotate = on;
@@ -211,6 +213,11 @@ async function main(): Promise<void> {
   const handlePick = (): void => {
     const inVR = renderer.xr.isPresenting;
     if (inVR) {
+      const climateHit = raycaster.intersectObjects(page.vrMenu.pickables(), false)[0];
+      if (climateHit) {
+        page.vrMenu.press(climateHit.object);
+        return;
+      }
       const ui = raycaster.intersectObjects(vr.pickables(), false)[0];
       if (ui) {
         runVrAction(ui.object.userData.action as VrAction);

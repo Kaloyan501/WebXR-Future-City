@@ -30,6 +30,7 @@ import { mountProductionSection } from './sections/production.ts';
 import { mountLifestyleSection } from './sections/lifestyle.ts';
 import { mountMenuSection } from './sections/menu.ts';
 import { setupPresentation } from './presentation.ts';
+import { ClimateVrMenu } from './vr-climate-menu.ts';
 import { inputOf, mountSky } from './sky.ts';
 
 const SECTIONS: { id: string; title: string }[] = [
@@ -69,6 +70,8 @@ export interface ClimatePage {
   update(dt: number): void;
   /** Presentation mode asks for the city to turn slowly (true) or stop (false). */
   onRotate(fn: (on: boolean) => void): void;
+  /** Climate panel for the VR controller menu. */
+  vrMenu: ClimateVrMenu;
   /** The part of the window not covered by the top bar and the two side bars, in CSS pixels. */
   freeArea(): FreeArea;
 }
@@ -265,6 +268,7 @@ export function mountClimatePage(opts: {
   return {
     store,
     freeArea,
+    vrMenu: new ClimateVrMenu(store, scenarios),
     weather: weather3d.group,
     update: (dt) => weather3d.update(dt),
     onRotate: (fn) => {

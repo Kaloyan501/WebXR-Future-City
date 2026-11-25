@@ -8,12 +8,13 @@ const MENU_OFFSET = new THREE.Vector3(0, 0.17, -0.2);
 export class ControllerMenu {
   readonly group = new THREE.Group();
 
-  constructor() {
+  /** `content` replaces the EXAMPLE placeholder; the background is sized to it. */
+  constructor(content?: { object: THREE.Object3D; width: number; height: number }) {
     this.group.name = 'controller-menu';
     this.group.visible = false;
 
     const background = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.2, 0.09),
+      new THREE.PlaneGeometry(content?.width ?? 0.2, content?.height ?? 0.09),
       new THREE.MeshBasicMaterial({
         color: 0x141a22,
         transparent: true,
@@ -22,6 +23,11 @@ export class ControllerMenu {
         side: THREE.DoubleSide,
       }),
     );
+
+    if (content) {
+      this.group.add(background, content.object);
+      return;
+    }
 
     const label = new Text();
     label.font = FONT_URL;
