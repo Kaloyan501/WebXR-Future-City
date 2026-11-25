@@ -1,0 +1,10 @@
+Menu button menu (troika library)
+    - Weather controls
+    - Time menu
+    - Climate visualizer
+
+Presentation VR visualizer (attachable to room surface scan)
+More info boxes
+3D model support in info boxes
+Better UI for info boxes
+Graphics settings menu (lower render scale)
