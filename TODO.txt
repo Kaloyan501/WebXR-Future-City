@@ -8,3 +8,4 @@ More info boxes
 3D model support in info boxes
 Better UI for info boxes
 Graphics settings menu (lower render scale)
+Remove HUD on the back of the plinth
