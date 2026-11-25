@@ -7,6 +7,12 @@ import type * as THREE from 'three';
 import climateScenarios from '../../content/climate-scenarios.json';
 import diseasesData from '../../content/diseases.json';
 import mealsData from '../../content/meals.json';
+import foodsData from '../../content/foods.json';
+import methodsData from '../../content/methods.json';
+import speciesData from '../../content/species.json';
+import type { FoodsData } from '../climate/foods.ts';
+import type { MethodDef } from '../climate/methods.ts';
+import type { SpeciesDef } from '../climate/species.ts';
 import type { DiseaseDef } from '../climate/health.ts';
 import type { MealsData } from '../climate/menu.ts';
 import { createStore, DEFAULT_STATE, type Store } from '../climate/state.ts';
@@ -15,18 +21,22 @@ import { visualsFor } from '../climate/visuals.ts';
 import { weatherLook } from '../climate/weatherLook.ts';
 import { applyWeather } from '../scene/weather.ts';
 import { mountPanel } from './climate-panel.ts';
+import { mountBiologySection } from './sections/biology.ts';
 import { mountCitySection } from './sections/city.ts';
+import { mountFoodsSection } from './sections/foods.ts';
+import { mountNumbersSection } from './sections/numbers.ts';
+import { mountProductionSection } from './sections/production.ts';
 import { mountLifestyleSection } from './sections/lifestyle.ts';
 import { mountMenuSection } from './sections/menu.ts';
 import { inputOf, mountSky } from './sky.ts';
 
-const SECTIONS: { id: string; title: string; pending?: string }[] = [
+const SECTIONS: { id: string; title: string }[] = [
   { id: 'city', title: 'Градът' },
-  { id: 'production', title: 'География и производство', pending: 'кои начини за отглеждане на храна са възможни и какво струват.' },
-  { id: 'biology', title: 'Биология', pending: 'растения и животни, които виреят при тези условия.' },
-  { id: 'foods', title: 'Храни', pending: 'хранителните вещества и типичното ядене за този климат.' },
+  { id: 'production', title: 'География и производство' },
+  { id: 'biology', title: 'Биология' },
+  { id: 'foods', title: 'Храни' },
   { id: 'menu', title: 'Дневно меню' },
-  { id: 'numbers', title: 'Храната в числа', pending: 'колко плодове и зеленчуци са нужни на града и пътят от фермата до масата.' },
+  { id: 'numbers', title: 'Храната в числа' },
   { id: 'lifestyle', title: 'Начин на живот' },
 ];
 
@@ -95,11 +105,7 @@ export function mountClimatePage(opts: {
   // Left: the scrolling section sheets.
   const content = el('main', { id: 'content' });
   for (const s of SECTIONS) {
-    const section = el('section', { id: s.id, class: 'sheet', 'aria-labelledby': `${s.id}-title` });
-    if (s.pending) {
-      section.append(el('h2', { id: `${s.id}-title` }, s.title), el('p', { class: 'pending' }, `В процес на изработка: ${s.pending}`));
-    }
-    content.append(section);
+    content.append(el('section', { id: s.id, class: 'sheet', 'aria-labelledby': `${s.id}-title` }));
   }
 
   // Right: the settings panel, with Kaloyan's layer buttons and sea-level slider as a "Карта" group.
@@ -138,7 +144,12 @@ export function mountClimatePage(opts: {
 
   const citySection = content.querySelector<HTMLElement>('#city')!;
   mountCitySection(citySection, store, scenarios);
-  mountMenuSection(content.querySelector<HTMLElement>('#menu')!, store, mealsData as MealsData);
+  const section = (id: string) => content.querySelector<HTMLElement>(`#${id}`)!;
+  mountProductionSection(section('production'), store, methodsData as MethodDef[]);
+  mountBiologySection(section('biology'), store, speciesData as SpeciesDef[]);
+  mountFoodsSection(section('foods'), store, foodsData as FoodsData, mealsData as MealsData);
+  mountMenuSection(section('menu'), store, mealsData as MealsData);
+  mountNumbersSection(section('numbers'), store);
   mountLifestyleSection(content.querySelector<HTMLElement>('#lifestyle')!, store, diseasesData as DiseaseDef[], reducedMotion);
   mountSky(bg, particles, store, { reducedMotion });
 

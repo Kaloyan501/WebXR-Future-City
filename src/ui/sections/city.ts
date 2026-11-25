@@ -5,6 +5,7 @@ import { dayCurve } from '../../climate/dayCurve.ts';
 import { formatNumber, formatSetting, isWarning, levelsOf, type Levels } from '../../climate/levels.ts';
 import { matchesScenario, type Scenario } from '../../climate/scenarios.ts';
 import { openScenarioPicker } from '../scenario-picker.ts';
+import { el } from '../dom.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -13,12 +14,6 @@ const CH = { w: 340, h: 190, left: 34, right: 12, top: 14, bottom: 28, tMin: -25
 const xOf = (hour: number) => CH.left + (hour / 24) * (CH.w - CH.left - CH.right);
 const yOf = (t: number) => CH.top + ((CH.tMax - t) / (CH.tMax - CH.tMin)) * (CH.h - CH.top - CH.bottom);
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
-  if (className) e.className = className;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
 
 function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number>): SVGElementTagNameMap[K] {
   const e = document.createElementNS(SVG_NS, tag);

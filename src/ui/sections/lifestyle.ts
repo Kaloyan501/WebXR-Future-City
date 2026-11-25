@@ -3,13 +3,8 @@
 import type { Store } from '../../climate/state.ts';
 import { createTween } from '../../climate/tween.ts';
 import { diseaseRisks, lifespan, type DiseaseDef } from '../../climate/health.ts';
+import { el } from '../dom.ts';
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
-  if (className) e.className = className;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
 
 /** 74.5 → "74,5"; 76 → "76"; with a real minus/plus sign when asked. */
 function years(v: number, signed = false): string {

@@ -1,0 +1,16 @@
+[
+  { "id": "wheat", "name": "Пшеница", "kind": "Растение", "temp": [3, 32], "conditions": [{ "param": "humidity", "min": 30, "max": 70 }, { "param": "land", "min": 30 }], "trait": "Основен източник на въглехидрати" },
+  { "id": "beans", "name": "Боб / леща", "kind": "Растение", "temp": [8, 30], "conditions": [{ "param": "water", "min": 30 }], "trait": "Растителен белтък; обогатява почвата с азот" },
+  { "id": "tomato", "name": "Домат", "kind": "Растение", "temp": [10, 35], "conditions": [{ "param": "humidity", "min": 40, "max": 80 }], "trait": "Много вода и витамин C" },
+  { "id": "lettuce", "name": "Маруля", "kind": "Растение", "temp": [5, 25], "conditions": [], "trait": "Расте и във вертикална ферма" },
+  { "id": "olive", "name": "Маслина", "kind": "Растение", "temp": [5, 40], "conditions": [{ "param": "humidity", "min": 20, "max": 60 }], "trait": "Издържа суша; полезни мазнини" },
+  { "id": "rice", "name": "Ориз", "kind": "Растение", "temp": [20, 38], "conditions": [{ "param": "humidity", "min": 70 }, { "param": "water", "min": 70 }], "trait": "Нуждае се от много вода" },
+  { "id": "opuntia", "name": "Опунция (кактус)", "kind": "Растение", "temp": [10, 45], "conditions": [{ "param": "humidity", "max": 40 }], "trait": "Запасява вода в стъблото" },
+  { "id": "lichen", "name": "Лишеи", "kind": "Организъм (гъба + водорасло)", "temp": [-20, 35], "conditions": [{ "param": "aqi", "lt": 100 }], "trait": "Биоиндикатор: изчезват при замърсен въздух" },
+  { "id": "bee", "name": "Медоносна пчела", "kind": "Животно", "temp": [10, 38], "conditions": [{ "param": "windSpeed", "lt": 40 }], "trait": "Опрашва културите" },
+  { "id": "earthworm", "name": "Земен червей", "kind": "Животно", "temp": [5, 25], "conditions": [{ "param": "humidity", "min": 40 }], "trait": "Разрохква почвата и помага на компоста" },
+  { "id": "carp", "name": "Шаран", "kind": "Животно", "temp": [5, 30], "conditions": [{ "param": "water", "min": 30 }], "trait": "Източник на белтък от аквакултура" },
+  { "id": "lizard", "name": "Гущер", "kind": "Животно", "temp": [15, 45], "conditions": [], "trait": "Студенокръвен: зависи от топлината на средата" },
+  { "id": "mosquito", "name": "Комар", "kind": "Животно", "temp": [15, 40], "conditions": [{ "param": "humidity", "min": 60 }], "trait": "Преносител на болести (виж „Начин на живот“)" },
+  { "id": "sparrow", "name": "Врабче", "kind": "Животно", "temp": [-15, 35], "conditions": [], "trait": "Приспособено към градска среда" }
+]

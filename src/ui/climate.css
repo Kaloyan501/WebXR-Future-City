@@ -228,11 +228,6 @@ html:has(body.hide-sections) {
   margin: 0 0 12px;
 }
 
-.pending {
-  color: var(--muted);
-  margin: 0;
-}
-
 /* ---------- Buttons ---------- */
 
 .button {
@@ -1058,4 +1053,331 @@ dialog p {
 .risk-why {
   margin: 0;
   font-size: 15px;
+}
+
+/* ---------- Tags used by several sections ---------- */
+
+.tag {
+  flex: none;
+  padding: 1px 8px;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 4px;
+}
+
+.tag-ok {
+  color: #fff;
+  background: var(--green);
+}
+
+.tag-mid {
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+
+.tag-bad {
+  color: var(--ink);
+  background: var(--warn);
+}
+
+/* ---------- География и производство ---------- */
+
+.methods,
+.combo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.methods li,
+.combo li {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.combo {
+  counter-reset: combo;
+}
+
+.method-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.method-name {
+  font-weight: 700;
+}
+
+.uses {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+
+.use {
+  display: grid;
+  grid-template-columns: 80px 1fr 110px;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.use-bar {
+  height: 8px;
+  background: rgba(31, 77, 58, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.use-fill {
+  display: block;
+  height: 100%;
+  background: var(--green);
+  border-radius: 4px;
+}
+
+.use-word {
+  color: var(--muted);
+}
+
+.method-limit,
+.method-missing,
+.combo p {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+/* ---------- Биология ---------- */
+
+.species {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sp {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  transition: opacity 400ms ease, filter 400ms ease;
+}
+
+.sp-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.sp-name {
+  font-weight: 700;
+}
+
+.sp-kind,
+.sp-trait {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.sp-trait {
+  grid-column: 1;
+  margin: 2px 0 0;
+}
+
+.sp-status {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.sp-off {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.sp-off .sp-status {
+  color: var(--ink);
+}
+
+/* ---------- Храни ---------- */
+
+.typical {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.meal-icon {
+  flex: none;
+  width: 120px;
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.typical p {
+  margin: 0;
+}
+
+.typical-label {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.typical-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1.25;
+}
+
+.typical-drink {
+  font-weight: 600;
+}
+
+.to-menu {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.nutrients {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 16px;
+  margin: 0;
+}
+
+.nutrients dt,
+.nutrients dd {
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+
+.nutrients dt {
+  font-weight: 700;
+}
+
+.examples {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.examples li {
+  margin: 6px 0;
+}
+
+/* ---------- Храната в числа ---------- */
+
+.calc p {
+  margin: 4px 0;
+}
+
+.calc-step {
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-result {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.calc .button {
+  margin: 8px 0 4px;
+}
+
+.calc-check {
+  font-weight: 600;
+}
+
+.chain {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 4px;
+}
+
+.chain-box rect {
+  fill: rgba(255, 255, 255, 0.7);
+  stroke: var(--line);
+  stroke-width: 1.5;
+  transition: fill 400ms ease, stroke 400ms ease;
+}
+
+.chain-box.weak rect {
+  fill: rgba(224, 122, 46, 0.22);
+  stroke: var(--warn);
+  stroke-width: 2.5;
+}
+
+.chain-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  fill: var(--ink);
+}
+
+.chain-sub {
+  font-size: 12.5px;
+  fill: var(--muted);
+}
+
+.chain-arrow {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.chain-head {
+  fill: var(--muted);
+}
+
+.chain-compost,
+.chain-compost-label {
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.chain-compost {
+  stroke: var(--green);
+  stroke-dasharray: 5 5;
+}
+
+.chain-compost.on,
+.chain-compost-label.on {
+  opacity: 1;
+}
+
+.chain-compost-label {
+  font-size: 12.5px;
+  fill: var(--green);
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.switch input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
 }

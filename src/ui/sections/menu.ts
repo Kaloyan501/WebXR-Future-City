@@ -2,15 +2,10 @@
 // that decides which menu the "Начин на живот" section uses.
 import type { Store } from '../../climate/state.ts';
 import { dailyMenu, dishTotals, SLOTS, voteResult, type Dish, type MealsData } from '../../climate/menu.ts';
+import { el } from '../dom.ts';
 
 const BAND_NAME = { cold: 'студен', temperate: 'умерен', warm: 'топъл' } as const;
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
-  if (className) e.className = className;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
 
 const num = (x: number) => String(Math.round(x * 10) / 10).replace('.', ',');
 
