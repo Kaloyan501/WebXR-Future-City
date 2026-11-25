@@ -4,7 +4,7 @@ import { FONT_URL } from '../scene/font';
 
 const MENU_OFFSET = new THREE.Vector3(0, 0.17, -0.2);
 
-/** Small Troika HUD attached to the left controller's target-ray space. */
+/** Small Troika HUD attached to the target-ray space of the controller that opened it. */
 export class ControllerMenu {
   readonly group = new THREE.Group();
 

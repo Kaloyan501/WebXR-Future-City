@@ -388,10 +388,8 @@ async function main(): Promise<void> {
       // button is reserved by the Quest system and never reaches the page, so it can't be used.
       const menuPressed = src.gamepad.buttons[4]?.pressed ?? false;
       if (menuPressed && !menuButtonWasPressed) {
-        // The menu rides on the left controller, so the right hand stays free to point at it.
-        const menuRay =
-          rays.find((r) => (r.userData.inputSource as XRInputSource | undefined)?.handedness === 'left') ??
-          rays.find((r) => r.userData.inputSource === src);
+        // The menu rides on the controller whose A button was pressed (the right one).
+        const menuRay = rays.find((r) => r.userData.inputSource === src);
         if (menuRay) controllerMenu.toggle(menuRay);
       }
       menuButtonWasPressed = menuPressed;
