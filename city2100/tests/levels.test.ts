@@ -63,3 +63,18 @@ test('format energy', () => assert.equal(fmt('energy'), '60 % · Норма'));
 test('format population', () => assert.equal(fmt('population'), '100 000 жители'));
 test('format population million', () => assert.equal(fmt('population', { population: 1000000 }), '1 000 000 жители'));
 test('format negative temp uses a real minus', () => assert.equal(fmt('temp', { temp: -5 }), '−5 °C · Студено'));
+
+test('warning levels are the adverse ones only', async () => {
+  const { isWarning } = await import('../core/levels.ts');
+  assert.equal(isWarning('temp', at({ temp: 41 })), true);
+  assert.equal(isWarning('temp', at({ temp: 18 })), false);
+  assert.equal(isWarning('temp', at({ temp: -5 })), false);
+  assert.equal(isWarning('wind', at({ windSpeed: 45 })), true);
+  assert.equal(isWarning('aqi', at({ aqi: 240 })), true);
+  assert.equal(isWarning('aqi', at({ aqi: 120 })), false);
+  assert.equal(isWarning('uv', at({ uv: 10 })), true);
+  assert.equal(isWarning('water', at({ water: 20 })), true);
+  assert.equal(isWarning('land', at({ land: 10 })), false);
+  assert.equal(isWarning('energy', at({ energy: 20 })), true);
+  assert.equal(isWarning('humidity', at({ humidity: 90 })), false);
+});

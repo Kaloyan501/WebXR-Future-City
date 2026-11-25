@@ -33,6 +33,13 @@ export function levelsOf(s: CityState): Levels {
   };
 }
 
+const WARNING_WORDS = new Set<string>(['Жега', 'Буря', 'Лошо', 'Висок', 'Дефицит', 'Оскъдна']);
+
+/** Adverse levels get the orange accent; everything else stays green. */
+export function isWarning(key: keyof Levels, lv: Levels): boolean {
+  return WARNING_WORDS.has(lv[key]);
+}
+
 export type SettingKey =
   | 'temp' | 'humidity' | 'windSpeed' | 'windDir' | 'aqi' | 'uv' | 'water' | 'land' | 'energy' | 'population';
 
