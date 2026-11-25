@@ -3,6 +3,7 @@ import type { Scenario } from './core/scenarios.ts';
 import scenariosData from './data/scenarios.json';
 import { mountBackground } from './ui/background.ts';
 import { mountPanel } from './ui/panel.ts';
+import { mountCitySection } from './ui/sections/city.ts';
 
 const scenarios = scenariosData as Scenario[];
 const store = createStore(DEFAULT_STATE);
@@ -10,3 +11,4 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 
 mountBackground(document.querySelector<HTMLElement>('#bg')!, store, { reducedMotion });
 mountPanel(document.querySelector<HTMLElement>('#panel')!, store, scenarios);
+mountCitySection(document.querySelector<HTMLElement>('#city')!, store, scenarios);
