@@ -1,0 +1,31 @@
+diff --git a/src/main.ts b/src/main.ts
+index ac52bf2..3557422 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -388,10 +388,8 @@ async function main(): Promise<void> {
+       // button is reserved by the Quest system and never reaches the page, so it can't be used.
+       const menuPressed = src.gamepad.buttons[4]?.pressed ?? false;
+       if (menuPressed && !menuButtonWasPressed) {
+-        // The menu rides on the left controller, so the right hand stays free to point at it.
+-        const menuRay =
+-          rays.find((r) => (r.userData.inputSource as XRInputSource | undefined)?.handedness === 'left') ??
+-          rays.find((r) => r.userData.inputSource === src);
++        // The menu rides on the controller whose A button was pressed (the right one).
++        const menuRay = rays.find((r) => r.userData.inputSource === src);
+         if (menuRay) controllerMenu.toggle(menuRay);
+       }
+       menuButtonWasPressed = menuPressed;
+diff --git a/src/ui/controller-menu.ts b/src/ui/controller-menu.ts
+index e4a0107..680801d 100644
+--- a/src/ui/controller-menu.ts
++++ b/src/ui/controller-menu.ts
+@@ -4,7 +4,7 @@ import { FONT_URL } from '../scene/font';
+ 
+ const MENU_OFFSET = new THREE.Vector3(0, 0.17, -0.2);
+ 
+-/** Small Troika HUD attached to the left controller's target-ray space. */
++/** Small Troika HUD attached to the target-ray space of the controller that opened it. */
+ export class ControllerMenu {
+   readonly group = new THREE.Group();
+ 
+
