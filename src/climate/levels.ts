@@ -54,7 +54,7 @@ export function formatSetting(key: SettingKey, s: CityState): string {
   switch (key) {
     case 'temp': return `${formatNumber(s.temp)} °C · ${lv.temp}`;
     case 'humidity': return `${formatNumber(s.humidity)} % · ${lv.humidity}`;
-    case 'windSpeed': return `${formatNumber(s.windSpeed)} km/h · ${lv.wind}`;
+    case 'windSpeed': return `${formatNumber(s.windSpeed)} км/ч · ${lv.wind}`;
     case 'windDir': return s.windDir ?? 'Без посока';
     case 'aqi': return `${formatNumber(s.aqi)} · ${lv.aqi}`;
     case 'uv': return `${formatNumber(s.uv)} · ${lv.uv}`;

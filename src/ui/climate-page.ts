@@ -81,11 +81,10 @@ export function mountClimatePage(opts: {
   if (title) brand.append(title);
   const nav = el('nav', { 'aria-label': 'Раздели' });
   for (const s of SECTIONS) nav.append(el('a', { href: `#${s.id}` }, s.title));
-  const toggles = el('div', { class: 'bar-toggles' });
-  const sectionsToggle = el('button', { type: 'button', 'aria-pressed': 'true', 'aria-controls': 'content' }, 'Раздели');
-  const settingsToggle = el('button', { type: 'button', 'aria-pressed': 'true', 'aria-controls': 'panel' }, 'Настройки');
-  toggles.append(sectionsToggle, settingsToggle);
-  topnav.append(brand, nav, toggles);
+  // Each toggle sits on the side of the bar it controls.
+  const sectionsToggle = el('button', { type: 'button', class: 'bar-toggle', 'aria-pressed': 'true', 'aria-controls': 'content' }, 'Раздели');
+  const settingsToggle = el('button', { type: 'button', class: 'bar-toggle bar-toggle-right', 'aria-pressed': 'true', 'aria-controls': 'panel' }, 'Настройки');
+  topnav.append(sectionsToggle, brand, nav, settingsToggle);
 
   // Left: the scrolling section sheets.
   const content = el('main', { id: 'content' });
@@ -149,22 +148,38 @@ export function mountClimatePage(opts: {
   opts.renderer.xr.addEventListener('sessionstart', applyScene);
   opts.renderer.xr.addEventListener('sessionend', applyScene);
 
-  // Bar toggles: hide the sections or the settings to show the whole city, then re-fit the 3D view.
+  // Bar toggles: the bars slide away (CSS) and the city glides into the freed space, because the
+  // 3D view is re-fitted on every frame of the slide from the bars' live positions.
+  const SLIDE_MS = 420;
+  let slideUntil = 0;
+  const followSlide = () => {
+    window.dispatchEvent(new Event('resize'));
+    if (performance.now() < slideUntil) requestAnimationFrame(followSlide);
+  };
   const bindToggle = (button: HTMLButtonElement, cls: string) => {
     button.addEventListener('click', () => {
       const hidden = body.classList.toggle(cls);
       button.setAttribute('aria-pressed', String(!hidden));
-      window.dispatchEvent(new Event('resize'));
+      const running = performance.now() < slideUntil;
+      slideUntil = performance.now() + (reducedMotion ? 0 : SLIDE_MS);
+      if (!running) followSlide();
     });
   };
   bindToggle(sectionsToggle, 'hide-sections');
   bindToggle(settingsToggle, 'hide-settings');
+  // One last re-fit when a slide really ends, so the city settles exactly in place.
+  for (const bar of [content, panel]) {
+    bar.addEventListener('transitionend', (e) => {
+      if (e.target === bar && e.propertyName === 'transform') window.dispatchEvent(new Event('resize'));
+    });
+  }
 
   // A plain mouse wheel over the city scrolls the page; Ctrl+wheel (or a trackpad pinch) zooms the city.
   window.addEventListener(
     'wheel',
     (e) => {
-      if (e.target === canvas && !e.ctrlKey) e.stopPropagation();
+      // With the sections hidden there is nothing to scroll, so the wheel zooms the city as before.
+      if (e.target === canvas && !e.ctrlKey && !body.classList.contains('hide-sections')) e.stopPropagation();
     },
     { capture: true },
   );
@@ -178,10 +193,13 @@ export function mountClimatePage(opts: {
   };
   new MutationObserver(translateXr).observe(body, { childList: true, subtree: true, characterData: true });
 
+  // Live positions, so the result follows the bars while they slide in or out.
   const freeArea = (): FreeArea => {
     const top = topnav.getBoundingClientRect().bottom;
-    const left = body.classList.contains('hide-sections') ? 0 : content.getBoundingClientRect().right + 16;
-    const right = body.classList.contains('hide-settings') ? window.innerWidth : panel.getBoundingClientRect().left - 16;
+    const c = content.getBoundingClientRect();
+    const p = panel.getBoundingClientRect();
+    const left = c.right > 0 ? c.right + 16 : 0;
+    const right = p.left < window.innerWidth ? p.left - 16 : window.innerWidth;
     return { left, right: Math.max(right, left + 200), top, bottom: window.innerHeight };
   };
 

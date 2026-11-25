@@ -166,12 +166,46 @@ h3 {
   pointer-events: auto;
 }
 
+/* The bars slide out of view instead of disappearing at once. */
+#content,
+#panel,
+.topnav nav {
+  transition:
+    transform 400ms ease,
+    opacity 400ms ease,
+    visibility 0s linear 0s;
+}
+
+body.hide-sections #content,
+body.hide-settings #panel,
+body.hide-sections .topnav nav {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 400ms ease,
+    opacity 400ms ease,
+    visibility 0s linear 400ms;
+}
+
 body.hide-sections #content {
-  display: none;
+  transform: translateX(calc(-100% - 48px));
 }
 
 body.hide-settings #panel {
-  display: none;
+  transform: translateX(calc(100% + 48px));
+}
+
+/* Nothing to scroll while the sections are hidden. */
+html:has(body.hide-sections) {
+  overflow-y: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #content,
+  #panel,
+  .topnav nav {
+    transition: none !important;
+  }
 }
 
 .sheet {
@@ -608,13 +642,11 @@ dialog p {
   color: var(--green);
 }
 
-.bar-toggles {
-  display: flex;
-  gap: 8px;
+.bar-toggle-right {
   margin-left: auto;
 }
 
-.bar-toggles button {
+.bar-toggle {
   font: inherit;
   font-size: 15px;
   font-weight: 700;
@@ -626,7 +658,7 @@ dialog p {
   cursor: pointer;
 }
 
-.bar-toggles button[aria-pressed='true'] {
+.bar-toggle[aria-pressed='true'] {
   color: #fff;
   background: var(--green);
   border-color: var(--green);

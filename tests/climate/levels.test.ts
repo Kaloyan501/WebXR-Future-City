@@ -52,7 +52,7 @@ const fmt = (key: Parameters<typeof formatSetting>[0], patch: Partial<CityState>
 
 test('format temp', () => assert.equal(fmt('temp', { temp: 41 }), '41 °C · Жега'));
 test('format humidity', () => assert.equal(fmt('humidity'), '55 % · Нормално'));
-test('format windSpeed', () => assert.equal(fmt('windSpeed'), '15 km/h · Умерено'));
+test('format windSpeed', () => assert.equal(fmt('windSpeed'), '15 км/ч · Умерено'));
 test('format windDir', () => assert.equal(fmt('windDir'), 'З'));
 test('format windDir null', () => assert.equal(fmt('windDir', { windDir: null }), 'Без посока'));
 test('format aqi', () => assert.equal(fmt('aqi'), '40 · Добро'));

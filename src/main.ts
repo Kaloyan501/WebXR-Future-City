@@ -126,7 +126,9 @@ async function main(): Promise<void> {
   function resize(): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    renderer.setSize(w, h, false);
+    // Only resize the drawing buffer when the window really changed (re-fits also run while side bars slide).
+    const size = renderer.getSize(new THREE.Vector2());
+    if (size.x !== w || size.y !== h) renderer.setSize(w, h, false);
     const aspect = w / h;
     // Keep the whole plate visible on narrow (portrait) screens too.
     let halfH = Math.max(VIEW_HALF_HEIGHT, (GRID * 0.8) / aspect);

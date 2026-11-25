@@ -39,7 +39,7 @@ const DIR_FROM: Record<string, string> = {
 const READINGS: Reading[] = [
   { label: 'Температура', value: (s) => `${formatNumber(s.temp)} °C`, level: 'temp' },
   { label: 'Влажност', value: (s) => `${formatNumber(s.humidity)} %`, level: 'humidity' },
-  { label: 'Вятър', value: (s) => `${formatNumber(s.windSpeed)} km/h`, level: 'wind' },
+  { label: 'Вятър', value: (s) => `${formatNumber(s.windSpeed)} км/ч`, level: 'wind' },
   {
     label: 'Посока',
     value: (s) => (s.windDir ? `от ${DIR_FROM[s.windDir]} (${formatSetting('windDir', s)})` : 'без посока'),
