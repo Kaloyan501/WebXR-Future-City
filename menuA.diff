@@ -1,0 +1,78 @@
+diff --git a/src/main.ts b/src/main.ts
+index b76ef74..ac52bf2 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -82,7 +82,6 @@ async function main(): Promise<void> {
+   const vr = new VrUI(content);
+   const controllerMenu = new ControllerMenu();
+   let menuButtonWasPressed = false;
+-  let menuLogged = false;
+   // Control panel floats behind the model at about eye height, so nobody has to look down for it.
+   vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
+   scene.add(vr.group);
+@@ -375,14 +374,29 @@ async function main(): Promise<void> {
+     const session = renderer.xr.getSession();
+     if (!session) return;
+     const dead = (v: number): number => (Math.abs(v) < STICK_DEADZONE ? 0 : v);
++    let rightControllerFound = false;
+     for (const src of session.inputSources) {
+       if (src.handedness !== 'right' || !src.gamepad) continue;
++      rightControllerFound = true;
+       const x = dead(src.gamepad.axes[2] ?? 0);
+       const y = dead(src.gamepad.axes[3] ?? 0);
+       plateYaw -= x * ROTATE_SPEED * dt;
+       const s = world.scale.x * Math.exp(-y * ZOOM_SPEED * dt); // stick up is negative y
+       world.scale.setScalar(THREE.MathUtils.clamp(s, VR_MIN_SCALE, VR_MAX_SCALE));
++
++      // A button (xr-standard buttons[4] on the right Touch controller) toggles the menu. The left Menu (hamburger)
++      // button is reserved by the Quest system and never reaches the page, so it can't be used.
++      const menuPressed = src.gamepad.buttons[4]?.pressed ?? false;
++      if (menuPressed && !menuButtonWasPressed) {
++        // The menu rides on the left controller, so the right hand stays free to point at it.
++        const menuRay =
++          rays.find((r) => (r.userData.inputSource as XRInputSource | undefined)?.handedness === 'left') ??
++          rays.find((r) => r.userData.inputSource === src);
++        if (menuRay) controllerMenu.toggle(menuRay);
++      }
++      menuButtonWasPressed = menuPressed;
+     }
++    if (!rightControllerFound) menuButtonWasPressed = false;
+   };
+ 
+   // Left controller: thumbstick moves the stage relative to where you are looking; Y turns it left, X turns it right.
+@@ -391,10 +405,8 @@ async function main(): Promise<void> {
+     const session = renderer.xr.getSession();
+     if (!session) return;
+     const dead = (v: number): number => (Math.abs(v) < STICK_DEADZONE ? 0 : v);
+-    let leftControllerFound = false;
+     for (const src of session.inputSources) {
+       if (src.handedness !== 'left' || !src.gamepad) continue;
+-      leftControllerFound = true;
+       const x = dead(src.gamepad.axes[2] ?? 0);
+       const y = dead(src.gamepad.axes[3] ?? 0);
+       if (x !== 0 || y !== 0) {
+@@ -410,23 +422,7 @@ async function main(): Promise<void> {
+       // xr-standard buttons: 4 = X, 5 = Y on the left Touch controller.
+       if (src.gamepad.buttons[5]?.pressed) stageYaw += ROTATE_SPEED * dt;
+       if (src.gamepad.buttons[4]?.pressed) stageYaw -= ROTATE_SPEED * dt;
+-
+-      // xr-standard layout of the Touch controllers: buttons[7] is the left Menu (hamburger) button, buttons[3] the
+-      // thumbstick click. Quest's system may keep the Menu press for itself and never report it to the page, so the
+-      // thumbstick click toggles the menu too.
+-      if (!menuLogged) {
+-        menuLogged = true;
+-        console.info(`[menu] left controller profiles=${src.profiles.join(',')} buttons=${src.gamepad.buttons.length}`);
+-      }
+-      const menuPressed = (src.gamepad.buttons[7]?.pressed ?? false) || (src.gamepad.buttons[3]?.pressed ?? false);
+-      if (menuPressed && !menuButtonWasPressed) {
+-        const controllerRay = rays.find((r) => r.userData.inputSource === src);
+-        console.info(`[menu] toggle (ray ${controllerRay ? 'found' : 'MISSING'})`);
+-        if (controllerRay) controllerMenu.toggle(controllerRay);
+-      }
+-      menuButtonWasPressed = menuPressed;
+     }
+-    if (!leftControllerFound) menuButtonWasPressed = false;
+   };
+ 
+   renderer.setAnimationLoop((time) => {
+
