@@ -1,0 +1,48 @@
+diff --git a/src/main.ts b/src/main.ts
+index 5f53c0e..b76ef74 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -82,6 +82,7 @@ async function main(): Promise<void> {
+   const vr = new VrUI(content);
+   const controllerMenu = new ControllerMenu();
+   let menuButtonWasPressed = false;
++  let menuLogged = false;
+   // Control panel floats behind the model at about eye height, so nobody has to look down for it.
+   vr.toolbar.position.set(0, 1.3, -VR_DISTANCE - 0.7);
+   scene.add(vr.group);
+@@ -293,6 +294,12 @@ async function main(): Promise<void> {
+     ray.addEventListener('squeezeend', () => {
+       if (dragRay === ray) dragRay = null;
+     });
++    ray.addEventListener('connected', (e) => {
++      ray.userData.inputSource = (e as unknown as { data: XRInputSource }).data;
++    });
++    ray.addEventListener('disconnected', () => {
++      ray.userData.inputSource = undefined;
++    });
+     scene.add(ray);
+     rays.push(ray);
+ 
+@@ -404,12 +411,17 @@ async function main(): Promise<void> {
+       if (src.gamepad.buttons[5]?.pressed) stageYaw += ROTATE_SPEED * dt;
+       if (src.gamepad.buttons[4]?.pressed) stageYaw -= ROTATE_SPEED * dt;
+ 
+-      // Touch Plus exposes the left Menu button at gamepad.buttons[7].
+-      const hasTouchPlusProfile = src.profiles.some((profile) => profile.startsWith('meta-quest-touch-plus'));
+-      const menuPressed = hasTouchPlusProfile && (src.gamepad.buttons[7]?.pressed ?? false);
++      // xr-standard layout of the Touch controllers: buttons[7] is the left Menu (hamburger) button, buttons[3] the
++      // thumbstick click. Quest's system may keep the Menu press for itself and never report it to the page, so the
++      // thumbstick click toggles the menu too.
++      if (!menuLogged) {
++        menuLogged = true;
++        console.info(`[menu] left controller profiles=${src.profiles.join(',')} buttons=${src.gamepad.buttons.length}`);
++      }
++      const menuPressed = (src.gamepad.buttons[7]?.pressed ?? false) || (src.gamepad.buttons[3]?.pressed ?? false);
+       if (menuPressed && !menuButtonWasPressed) {
+-        const sourceIndex = Array.from(session.inputSources).indexOf(src);
+-        const controllerRay = sourceIndex >= 0 ? rays[sourceIndex] : undefined;
++        const controllerRay = rays.find((r) => r.userData.inputSource === src);
++        console.info(`[menu] toggle (ray ${controllerRay ? 'found' : 'MISSING'})`);
+         if (controllerRay) controllerMenu.toggle(controllerRay);
+       }
+       menuButtonWasPressed = menuPressed;
