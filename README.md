@@ -30,6 +30,13 @@ Delete the template leftovers: `src/counter.ts`, `src/assets/`.
 | `src/ui/cards-vr.ts` | In-scene VR toolbar and floating card (DOM does not show in VR). |
 | `src/xr/emulator.ts` | Dev-only emulator install. |
 | `src/main.ts` | Renderer, isometric camera, picking, XR input, VR placement. |
+| `content/climate-scenarios.json` | The five ready-made climate scenarios behind "Зареди сценарий" (temperature, humidity, wind, AQI, UV, water, land, energy). |
+| `content/meals.json`, `diseases.json`, `species.json`, `methods.json`, `foods.json` | Text and numbers for the Град 2100 sections (menus and nutrition, disease risks, species, ways to grow food, nutrients). Edit these, not the code. |
+| `src/climate/` | Climate settings: state, level words, scenarios, background maths, transitions, sunlight and haze. Pure code with tests in `tests/climate/` (`node --test 'tests/climate/*.test.ts'`). |
+| `src/ui/climate-page.ts` | Град 2100 page over the 3D city: top bar, section column, settings panel, bar toggles, presentation mode. Moves the existing title, layer buttons, sea-level slider and card into that layout. |
+| `src/ui/sections/` | The seven Град 2100 sections. `src/ui/vr-climate-menu.ts` is the climate panel in the A-button controller menu. |
+| `src/scene/weather.ts`, `weather3d.ts` | Climate on the 3D model: sunlight, haze, rain, snow and clouds (also in VR). |
+| `src/ui/sky.ts` | Sky colour behind the 3D city. |
 
 ## Notes
 

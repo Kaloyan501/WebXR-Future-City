@@ -50,7 +50,7 @@ export interface Content {
 const file = raw as unknown as Omit<Content, 'placements'> & { placements?: Placement[] };
 export const content: Content = { ...file, placements: file.placements ?? [] };
 
-export const TAG_LABEL: Record<Tag, string> = { geo: 'Geography', bio: 'Biology' };
+export const TAG_LABEL: Record<Tag, string> = { geo: 'География', bio: 'Биология' };
 export const TAG_COLOR: Record<Tag, number> = { geo: 0xe8a33d, bio: 0x4caf7a };
 
 export const cssColor = (hex: number): string => '#' + hex.toString(16).padStart(6, '0');

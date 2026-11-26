@@ -1,0 +1,394 @@
+{
+  "note": "Ориентировъчни стойности за една порция по таблици за хранителен състав (USDA FoodData Central). Проверете ги преди представянето.",
+  "slots": {
+    "breakfast": "Закуска",
+    "lunch": "Обяд",
+    "snack": "Следобедна закуска",
+    "dinner": "Вечеря"
+  },
+  "menus": {
+    "cold": {
+      "B": { "breakfast": "oat-apple", "lunch": "bean-soup", "snack": "yogurt-honey", "dinner": "fish-potatoes" },
+      "A": { "breakfast": "croissant-cocoa", "lunch": "doner-fries", "snack": "wafer-tea", "dinner": "pizza" }
+    },
+    "temperate": {
+      "B": { "breakfast": "oats-yogurt-fruit", "lunch": "lentil-stew", "snack": "apple-nuts", "dinner": "veggie-omelette" },
+      "A": { "breakfast": "salami-sandwich", "lunch": "burger-fries", "snack": "chips-soda", "dinner": "pizza" }
+    },
+    "warm": {
+      "B": { "breakfast": "yogurt-peach", "lunch": "tarator-beans", "snack": "watermelon", "dinner": "shopska-fish" },
+      "A": { "breakfast": "pastry-coffee", "lunch": "fried-chicken", "snack": "ice-cream", "dinner": "hot-dog" }
+    }
+  },
+  "corrections": [
+    {
+      "id": "badAir",
+      "slot": "snack",
+      "dish": "peppers-orange",
+      "note": "Лош въздух (AQI над 150): повече храни с антиоксиданти и витамин C – чушки, цитруси, зеле."
+    },
+    {
+      "id": "highUvHeat",
+      "slot": "snack",
+      "dish": "watermelon",
+      "note": "Силно слънце или жега: храни с много вода и допълнителна вода между храненията."
+    },
+    {
+      "id": "lowUv",
+      "slot": "breakfast",
+      "dish": "eggs-salmon",
+      "note": "Малко слънце (UV под 3): източници на витамин D – риба, яйца, обогатени млечни продукти."
+    },
+    {
+      "id": "lowWater",
+      "slot": "dinner",
+      "dish": "chickpea-bulgur",
+      "note": "Недостиг на вода: по-малко месо и ориз, повече бобови и зърнени храни, които изискват по-малко вода."
+    },
+    {
+      "id": "lowLand",
+      "slot": "lunch",
+      "dish": "vertical-farm-salad",
+      "note": "Малко свободна земя: листните зеленчуци идват от вертикална ферма, а белтъкът – от микробен белтък."
+    },
+    {
+      "id": "spoilage",
+      "note": "Топло и влажно: храната се разваля бързо, нужни са хладилник и сянка.",
+      "warning": true
+    }
+  ],
+  "dishes": {
+    "oat-apple": {
+      "name": "Овесена каша с ябълка и орехи",
+      "drink": "билков чай",
+      "water": 450,
+      "ingredients": [
+        { "name": "Овесени ядки", "grams": 50, "kcal": 190, "protein": 6.5, "carbs": 33, "fat": 3.4, "fiber": 5 },
+        { "name": "Мляко 2 %", "grams": 200, "kcal": 100, "protein": 6.6, "carbs": 9.6, "fat": 4, "fiber": 0 },
+        { "name": "Ябълка", "grams": 100, "kcal": 52, "protein": 0.3, "carbs": 14, "fat": 0.2, "fiber": 2.4 },
+        { "name": "Орехи", "grams": 15, "kcal": 98, "protein": 2.3, "carbs": 2, "fat": 9.8, "fiber": 1 },
+        { "name": "Билков чай", "grams": 250, "kcal": 2, "protein": 0, "carbs": 0.4, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Много фибри, енергията се освобождава бавно", "Ненаситени мазнини от орехите", "Калций от млякото"],
+      "cons": ["Сравнително малко белтък"]
+    },
+    "croissant-cocoa": {
+      "name": "Кроасан",
+      "drink": "какао",
+      "water": 230,
+      "ingredients": [
+        { "name": "Кроасан с масло", "grams": 60, "kcal": 245, "protein": 5, "carbs": 27, "fat": 13, "fiber": 1.5 },
+        { "name": "Какао с мляко и захар", "grams": 250, "kcal": 200, "protein": 8, "carbs": 28, "fat": 6, "fiber": 1.5 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Много наситени мазнини", "Много добавена захар", "Малко фибри"]
+    },
+    "bean-soup": {
+      "name": "Бобена чорба, пълнозърнест хляб, салата от зеле и моркови",
+      "drink": "вода",
+      "water": 700,
+      "ingredients": [
+        { "name": "Бобена чорба", "grams": 350, "kcal": 280, "protein": 15, "carbs": 42, "fat": 5, "fiber": 13 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Салата от зеле и моркови", "grams": 150, "kcal": 100, "protein": 2, "carbs": 12, "fat": 5, "fiber": 4 },
+        { "name": "Вода", "grams": 300, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Растителен белтък от боба", "Много фибри", "Витамин C от зелето"],
+      "cons": ["Няма витамин B12 (няма продукти от животински произход)"]
+    },
+    "doner-fries": {
+      "name": "Дюнер с пържени картофи",
+      "drink": "газирана напитка",
+      "water": 480,
+      "ingredients": [
+        { "name": "Дюнер", "grams": 300, "kcal": 650, "protein": 30, "carbs": 60, "fat": 32, "fiber": 4 },
+        { "name": "Пържени картофи", "grams": 150, "kcal": 470, "protein": 5, "carbs": 60, "fat": 23, "fiber": 5 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Много енергия и белтък"],
+      "cons": ["Много наситени мазнини и сол", "Добавена захар в напитката", "Почти няма витамини от зеленчуци"]
+    },
+    "yogurt-honey": {
+      "name": "Кисело мляко с мед",
+      "drink": "вода",
+      "water": 400,
+      "ingredients": [
+        { "name": "Кисело мляко", "grams": 150, "kcal": 95, "protein": 5, "carbs": 7, "fat": 5, "fiber": 0 },
+        { "name": "Мед", "grams": 15, "kcal": 46, "protein": 0, "carbs": 12, "fat": 0, "fiber": 0 },
+        { "name": "Мандарина", "grams": 100, "kcal": 53, "protein": 0.8, "carbs": 13, "fat": 0.3, "fiber": 1.8 }
+      ],
+      "pros": ["Белтък и калций", "Пробиотични бактерии", "Витамин C от мандарината"],
+      "cons": ["Добавена захар от меда"]
+    },
+    "wafer-tea": {
+      "name": "Шоколадова вафла",
+      "drink": "сладък чай",
+      "water": 250,
+      "ingredients": [
+        { "name": "Шоколадова вафла", "grams": 50, "kcal": 260, "protein": 3, "carbs": 30, "fat": 14, "fiber": 1 },
+        { "name": "Чай с 2 лъжички захар", "grams": 250, "kcal": 40, "protein": 0, "carbs": 10, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Много добавена захар", "Наситени мазнини", "Почти няма белтък и фибри"]
+    },
+    "fish-potatoes": {
+      "name": "Печена риба, картофи, задушени зеленчуци",
+      "drink": "вода",
+      "water": 650,
+      "ingredients": [
+        { "name": "Печена пъстърва", "grams": 150, "kcal": 210, "protein": 30, "carbs": 0, "fat": 9, "fiber": 0 },
+        { "name": "Варени картофи", "grams": 200, "kcal": 170, "protein": 4, "carbs": 39, "fat": 0.2, "fiber": 3.5 },
+        { "name": "Задушени зеленчуци", "grams": 150, "kcal": 100, "protein": 3, "carbs": 12, "fat": 5, "fiber": 4 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Пълноценен белтък", "Омега-3 мастни киселини и витамин D от рибата", "Фибри и витамини от зеленчуците"],
+      "cons": []
+    },
+    "pizza": {
+      "name": "Пица",
+      "drink": "газирана напитка",
+      "water": 420,
+      "ingredients": [
+        { "name": "Пица (2 парчета)", "grams": 250, "kcal": 670, "protein": 28, "carbs": 80, "fat": 26, "fiber": 5 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Белтък и калций от сиренето"],
+      "cons": ["Много сол и наситени мазнини", "Добавена захар в напитката", "Малко фибри"]
+    },
+    "oats-yogurt-fruit": {
+      "name": "Овесени ядки, кисело мляко, сезонен плод",
+      "drink": "вода",
+      "water": 450,
+      "ingredients": [
+        { "name": "Овесени ядки", "grams": 40, "kcal": 150, "protein": 5, "carbs": 27, "fat": 2.7, "fiber": 4 },
+        { "name": "Кисело мляко", "grams": 150, "kcal": 95, "protein": 5, "carbs": 7, "fat": 5, "fiber": 0 },
+        { "name": "Сезонен плод (круша)", "grams": 150, "kcal": 85, "protein": 0.5, "carbs": 23, "fat": 0.2, "fiber": 4.6 },
+        { "name": "Вода", "grams": 200, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Фибри и бавни въглехидрати", "Белтък и калций", "Витамини от плода"],
+      "cons": []
+    },
+    "salami-sandwich": {
+      "name": "Сандвич с бял хляб и салам",
+      "drink": "сок от кутия",
+      "water": 260,
+      "ingredients": [
+        { "name": "Бял хляб", "grams": 80, "kcal": 210, "protein": 7, "carbs": 39, "fat": 2.6, "fiber": 2 },
+        { "name": "Салам", "grams": 50, "kcal": 170, "protein": 7, "carbs": 1, "fat": 15, "fiber": 0 },
+        { "name": "Сок от кутия", "grams": 250, "kcal": 115, "protein": 0.5, "carbs": 27, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Преработено месо с много сол и наситени мазнини", "Бял хляб с малко фибри", "Много захар в сока"]
+    },
+    "lentil-stew": {
+      "name": "Яхния от леща, пълнозърнест хляб, зелена салата",
+      "drink": "вода",
+      "water": 700,
+      "ingredients": [
+        { "name": "Яхния от леща", "grams": 350, "kcal": 330, "protein": 18, "carbs": 45, "fat": 8, "fiber": 14 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Зелена салата със зехтин", "grams": 120, "kcal": 60, "protein": 1.5, "carbs": 4, "fat": 4.5, "fiber": 2 },
+        { "name": "Вода", "grams": 300, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Растителен белтък и желязо от лещата", "Много фибри", "Ненаситени мазнини от зехтина"],
+      "cons": []
+    },
+    "burger-fries": {
+      "name": "Бургер с пържени картофи",
+      "drink": "газирана напитка",
+      "water": 480,
+      "ingredients": [
+        { "name": "Бургер", "grams": 220, "kcal": 550, "protein": 28, "carbs": 40, "fat": 30, "fiber": 2 },
+        { "name": "Пържени картофи", "grams": 150, "kcal": 470, "protein": 5, "carbs": 60, "fat": 23, "fiber": 5 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Белтък от месото"],
+      "cons": ["Много наситени мазнини и сол", "Добавена захар в напитката", "Малко фибри и витамини"]
+    },
+    "apple-nuts": {
+      "name": "Ябълка и шепа ядки",
+      "drink": "вода",
+      "water": 380,
+      "ingredients": [
+        { "name": "Ябълка", "grams": 150, "kcal": 78, "protein": 0.4, "carbs": 21, "fat": 0.3, "fiber": 3.6 },
+        { "name": "Бадеми", "grams": 25, "kcal": 145, "protein": 5, "carbs": 5, "fat": 12.5, "fiber": 3 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Фибри", "Ненаситени мазнини и витамин E от ядките"],
+      "cons": []
+    },
+    "chips-soda": {
+      "name": "Чипс",
+      "drink": "газирана напитка",
+      "water": 320,
+      "ingredients": [
+        { "name": "Чипс", "grams": 50, "kcal": 270, "protein": 3, "carbs": 27, "fat": 17, "fiber": 2 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Много сол и мазнини", "Много добавена захар", "Почти няма витамини и белтък"]
+    },
+    "veggie-omelette": {
+      "name": "Омлет със зеленчуци, пълнозърнест хляб",
+      "drink": "вода",
+      "water": 420,
+      "ingredients": [
+        { "name": "Омлет от 2 яйца със зеленчуци", "grams": 200, "kcal": 230, "protein": 14, "carbs": 6, "fat": 16, "fiber": 2 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Пълноценен белтък от яйцата", "Витамини от зеленчуците", "Фибри от хляба"],
+      "cons": []
+    },
+    "yogurt-peach": {
+      "name": "Кисело мляко с праскова и овесени ядки",
+      "drink": "вода",
+      "water": 480,
+      "ingredients": [
+        { "name": "Кисело мляко", "grams": 200, "kcal": 125, "protein": 7, "carbs": 9, "fat": 7, "fiber": 0 },
+        { "name": "Праскова", "grams": 150, "kcal": 60, "protein": 1.4, "carbs": 14, "fat": 0.4, "fiber": 2.2 },
+        { "name": "Овесени ядки", "grams": 30, "kcal": 115, "protein": 4, "carbs": 20, "fat": 2, "fiber": 3 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Белтък и калций", "Плод с много вода", "Фибри"],
+      "cons": []
+    },
+    "pastry-coffee": {
+      "name": "Кифла",
+      "drink": "студено кафе със захар",
+      "water": 300,
+      "ingredients": [
+        { "name": "Кифла", "grams": 80, "kcal": 290, "protein": 6, "carbs": 45, "fat": 9, "fiber": 1.5 },
+        { "name": "Студено кафе с мляко и захар", "grams": 300, "kcal": 150, "protein": 3, "carbs": 28, "fat": 3, "fiber": 0 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Много добавена захар", "Бяло брашно с малко фибри", "Кофеинът не замества водата в жегата"]
+    },
+    "tarator-beans": {
+      "name": "Таратор, салата от боб, пълнозърнест хляб",
+      "drink": "вода",
+      "water": 800,
+      "ingredients": [
+        { "name": "Таратор", "grams": 300, "kcal": 150, "protein": 7, "carbs": 10, "fat": 9, "fiber": 1 },
+        { "name": "Салата от боб", "grams": 150, "kcal": 180, "protein": 9, "carbs": 25, "fat": 5, "fiber": 8 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Вода", "grams": 300, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Много вода (таратор)", "Растителен белтък от боба", "Фибри"],
+      "cons": []
+    },
+    "fried-chicken": {
+      "name": "Пържено пиле с картофи",
+      "drink": "газирана напитка",
+      "water": 470,
+      "ingredients": [
+        { "name": "Пържено пиле", "grams": 200, "kcal": 520, "protein": 38, "carbs": 16, "fat": 34, "fiber": 1 },
+        { "name": "Пържени картофи", "grams": 150, "kcal": 470, "protein": 5, "carbs": 60, "fat": 23, "fiber": 5 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Много белтък"],
+      "cons": ["Много мазнини от пърженето", "Добавена захар в напитката", "Почти няма зеленчуци"]
+    },
+    "watermelon": {
+      "name": "Диня и краставица",
+      "drink": "вода",
+      "water": 560,
+      "ingredients": [
+        { "name": "Диня", "grams": 250, "kcal": 75, "protein": 1.5, "carbs": 19, "fat": 0.4, "fiber": 1 },
+        { "name": "Краставица", "grams": 100, "kcal": 15, "protein": 0.7, "carbs": 3.6, "fat": 0.1, "fiber": 0.5 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Над 90 % вода", "Малко калории", "Калий и витамин C"],
+      "cons": ["Почти няма белтък"]
+    },
+    "ice-cream": {
+      "name": "Сладолед",
+      "drink": "газирана напитка",
+      "water": 350,
+      "ingredients": [
+        { "name": "Сладолед", "grams": 100, "kcal": 210, "protein": 3.5, "carbs": 24, "fat": 11, "fiber": 0.7 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Малко калций"],
+      "cons": ["Много добавена захар", "Наситени мазнини", "Не утолява жаждата"]
+    },
+    "shopska-fish": {
+      "name": "Шопска салата, печени зеленчуци с риба",
+      "drink": "айрян",
+      "water": 700,
+      "ingredients": [
+        { "name": "Шопска салата", "grams": 250, "kcal": 200, "protein": 8, "carbs": 10, "fat": 15, "fiber": 3 },
+        { "name": "Печени зеленчуци", "grams": 150, "kcal": 90, "protein": 2, "carbs": 12, "fat": 4, "fiber": 4 },
+        { "name": "Печена риба", "grams": 150, "kcal": 210, "protein": 30, "carbs": 0, "fat": 9, "fiber": 0 },
+        { "name": "Айрян", "grams": 250, "kcal": 90, "protein": 5, "carbs": 7, "fat": 4.5, "fiber": 0 }
+      ],
+      "pros": ["Зеленчуци с много вода", "Пълноценен белтък и омега-3", "Айрянът връща солите при жега"],
+      "cons": ["Сиренето добавя сол"]
+    },
+    "hot-dog": {
+      "name": "Хот-дог",
+      "drink": "газирана напитка",
+      "water": 360,
+      "ingredients": [
+        { "name": "Хот-дог", "grams": 150, "kcal": 400, "protein": 13, "carbs": 30, "fat": 25, "fiber": 1.5 },
+        { "name": "Газирана напитка", "grams": 330, "kcal": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Бърза енергия"],
+      "cons": ["Преработено месо с много сол", "Добавена захар в напитката", "Малко фибри"]
+    },
+    "peppers-orange": {
+      "name": "Чушки и моркови с хумус, портокал",
+      "drink": "вода",
+      "water": 520,
+      "ingredients": [
+        { "name": "Червена чушка", "grams": 100, "kcal": 31, "protein": 1, "carbs": 6, "fat": 0.3, "fiber": 2.1 },
+        { "name": "Моркови", "grams": 80, "kcal": 33, "protein": 0.7, "carbs": 8, "fat": 0.2, "fiber": 2.2 },
+        { "name": "Хумус", "grams": 50, "kcal": 85, "protein": 4, "carbs": 7, "fat": 5, "fiber": 3 },
+        { "name": "Портокал", "grams": 150, "kcal": 70, "protein": 1.4, "carbs": 18, "fat": 0.2, "fiber": 3.6 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Много витамин C и антиоксиданти", "Фибри", "Растителен белтък от хумуса"],
+      "cons": []
+    },
+    "eggs-salmon": {
+      "name": "Яйца със сьомга и пълнозърнест хляб",
+      "drink": "обогатено мляко",
+      "water": 300,
+      "ingredients": [
+        { "name": "Яйца (2 бр.)", "grams": 100, "kcal": 145, "protein": 12.5, "carbs": 1, "fat": 10, "fiber": 0 },
+        { "name": "Пушена сьомга", "grams": 50, "kcal": 60, "protein": 9, "carbs": 0, "fat": 2.2, "fiber": 0 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Мляко, обогатено с витамин D", "grams": 200, "kcal": 100, "protein": 6.6, "carbs": 9.6, "fat": 4, "fiber": 0 }
+      ],
+      "pros": ["Витамин D от рибата, яйцата и млякото", "Пълноценен белтък", "Омега-3"],
+      "cons": ["Пушената риба съдържа сол"]
+    },
+    "chickpea-bulgur": {
+      "name": "Нахут с булгур и зеленчуци",
+      "drink": "вода",
+      "water": 550,
+      "ingredients": [
+        { "name": "Варен нахут", "grams": 150, "kcal": 245, "protein": 13, "carbs": 41, "fat": 4, "fiber": 11 },
+        { "name": "Варен булгур", "grams": 150, "kcal": 125, "protein": 4.6, "carbs": 28, "fat": 0.4, "fiber": 6.8 },
+        { "name": "Зеленчуци", "grams": 100, "kcal": 40, "protein": 1.5, "carbs": 8, "fat": 0.3, "fiber": 3 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Растителен белтък", "Много фибри", "Отглеждането изисква по-малко вода от месото"],
+      "cons": []
+    },
+    "vertical-farm-salad": {
+      "name": "Салата от вертикална ферма с микробен белтък",
+      "drink": "вода",
+      "water": 450,
+      "ingredients": [
+        { "name": "Листни зеленчуци (вертикална ферма)", "grams": 100, "kcal": 20, "protein": 1.5, "carbs": 3, "fat": 0.3, "fiber": 1.5 },
+        { "name": "Микробен белтък (микопротеин)", "grams": 100, "kcal": 90, "protein": 11, "carbs": 3, "fat": 2.9, "fiber": 6 },
+        { "name": "Пълнозърнест хляб", "grams": 60, "kcal": 150, "protein": 7, "carbs": 25, "fat": 2, "fiber": 4 },
+        { "name": "Зехтин", "grams": 10, "kcal": 88, "protein": 0, "carbs": 0, "fat": 10, "fiber": 0 },
+        { "name": "Вода", "grams": 250, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0 }
+      ],
+      "pros": ["Белтък без нужда от много земя", "Фибри", "Ненаситени мазнини"],
+      "cons": ["Микробният белтък е нов – цена и приемане от хората"]
+    }
+  }
+}

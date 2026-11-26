@@ -1,13 +1,13 @@
 {
   "site": {
-    "title": "Climate City 2126",
-    "location": "Bulgaria, Black Sea coast (placeholder site, to be decided by the group)",
-    "note": "All text below is a draft. Verify facts and add sources before the demo."
+    "title": "Град 2100",
+    "location": "България, Черноморието (временно място, екипът ще избере)",
+    "note": "Целият текст е чернова. Проверете фактите и добавете източници преди представянето."
   },
   "scenarios": [
-    { "label": "Today", "year": 2026, "waterLevel": 0.3 },
-    { "label": "+50 years", "year": 2076, "waterLevel": 0.6 },
-    { "label": "+100 years", "year": 2126, "waterLevel": 0.95 }
+    { "label": "Днес", "year": 2026, "waterLevel": 0.3 },
+    { "label": "+50 години", "year": 2076, "waterLevel": 0.6 },
+    { "label": "+100 години", "year": 2126, "waterLevel": 0.95 }
   ],
   "placements": [
     { "model": "models/nuclear.glb", "tile": [-5, -5], "pin": 1 },
@@ -25,51 +25,51 @@
   "pins": [
     {
       "id": 1,
-      "title": "Nuclear energy hub",
+      "title": "Ядрен енергиен център",
       "tags": ["geo"],
       "position": [-9, -8],
-      "summary": "Steady baseload power for a hotter world. The adaptation question is cooling: reactors need a lot of water, and droughts and warmer water shrink the safety margin.",
-      "details": "Real-world reference: Kozloduy, Bulgaria's only nuclear plant, sits on the Danube. Discuss river versus sea-water cooling, flood-proofing the site, and why storage and renewables are still needed. TODO: add current figures and sources."
+      "summary": "Стабилна базова мощност за по-горещия свят. Въпросът за адаптацията е охлаждането: реакторите се нуждаят от много вода, а сушите и по-топлата вода намаляват запаса на безопасност.",
+      "details": "Пример от реалността: АЕЦ „Козлодуй“, единствената атомна централа в България, е на река Дунав. Обсъдете охлаждането с речна или морска вода, защитата на площадката от наводнения и защо пак са нужни съхранение на енергия и възобновяеми източници. Да се допълни: актуални данни и източници."
     },
     {
       "id": 2,
-      "title": "Drought-tolerant crop farms",
+      "title": "Ферми със сухоустойчиви култури",
       "tags": ["bio"],
       "position": [-8, 7],
-      "summary": "Fields of heat- and drought-tolerant crop varieties, some of them gene-edited. They show how plant biology can cut the water needed per kilogram of food.",
-      "details": "Discuss: how EU rules treat gene-edited plants, Bulgaria's traditionally cautious public view of GMOs, and the risks (less genetic diversity, seed dependence). TODO: verify the current EU regulation status and cite it."
+      "summary": "Ниви със сортове, които издържат на жега и суша, някои от тях генетично редактирани. Показват как биологията на растенията може да намали водата, нужна за килограм храна.",
+      "details": "Обсъдете: как правилата на ЕС третират генетично редактираните растения, традиционно предпазливото отношение към ГМО в България и рисковете (по-малко генетично разнообразие, зависимост от семена). Да се допълни: проверете актуалния статус на регулацията в ЕС и посочете източник."
     },
     {
       "id": 3,
-      "title": "Coastal wetland buffer",
+      "title": "Крайбрежна влажна зона",
       "tags": ["geo", "bio"],
       "position": [7.5, -4],
-      "summary": "A restored lagoon belt that soaks up storm surge and gives migrating birds a place to rest. A natural flood defence that doubles as habitat.",
-      "details": "Reference: the lakes around Burgas, on a major bird migration route along the Black Sea. Move the slider to +100 years and watch the wetland shift inland. TODO: add species and numbers."
+      "summary": "Възстановен пояс от лагуни, който поема бурните вълни и дава място за почивка на прелетните птици. Естествена защита от наводнения, която е и дом за много видове.",
+      "details": "Пример: езерата около Бургас, на голям прелетен път на птиците по Черноморието. Преместете плъзгача „Морско ниво“ на +100 години и вижте как влажната зона се измества навътре в сушата. Да се допълни: видове и числа."
     },
     {
       "id": 4,
-      "title": "Sponge district",
+      "title": "Квартал „гъба“",
       "tags": ["geo"],
       "position": [-1, 0],
-      "summary": "Permeable paving, green roofs and retention basins that hold cloudburst water instead of sending it down the street.",
-      "details": "Discuss: flash floods, where the water is stored, and reusing it for irrigation in dry spells. TODO: pick one Bulgarian flood event as the case study."
+      "summary": "Пропусклива настилка, зелени покриви и задържащи басейни, които задържат водата от проливните дъждове, вместо да я пускат по улицата.",
+      "details": "Обсъдете: внезапните наводнения, къде се съхранява водата и как се използва повторно за поливане в сухи периоди. Да се допълни: изберете едно наводнение в България като пример."
     },
     {
       "id": 5,
-      "title": "Elevated waterfront",
+      "title": "Издигнат крайбрежен квартал",
       "tags": ["geo"],
       "position": [8, 6],
-      "summary": "The lowest districts are raised or turned into flood-tolerant public space. Everything critical sits above the +100 year water line.",
-      "details": "Use the scenario slider to show why. Discuss managed retreat versus defending the coastline, and what each costs."
+      "summary": "Най-ниските квартали са издигнати или превърнати в обществени места, които понасят наводнения. Всичко важно е над нивото на водата след 100 години.",
+      "details": "Използвайте плъзгача „Морско ниво“, за да покажете защо. Обсъдете планираното оттегляне срещу защитата на брега и колко струва всяко от двете."
     },
     {
       "id": 6,
-      "title": "Cooling green corridors",
+      "title": "Охлаждащи зелени коридори",
       "tags": ["bio"],
       "position": [1, -7],
-      "summary": "Tree-lined streets and wind corridors that lower street temperatures during heatwaves, planted with heat- and drought-tolerant species.",
-      "details": "Discuss: the urban heat island effect, native versus imported species, and biodiversity benefits. TODO: choose species that suit Bulgaria's climate."
+      "summary": "Улици с дървета и коридори за вятъра, които понижават температурата по време на горещини, засадени с видове, издържащи на жега и суша.",
+      "details": "Обсъдете: ефекта на градския топлинен остров, местните срещу внесените видове и ползите за биоразнообразието. Да се допълни: изберете видове, подходящи за климата на България."
     }
   ]
 }
