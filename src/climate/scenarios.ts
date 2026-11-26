@@ -1,11 +1,11 @@
 // The ready-made cases behind "Зареди сценарий". The data lives in data/scenarios.json,
 // so new scenarios can be added without touching code.
-import type { CityState } from './state.ts';
+import { freeLand, type CityState } from './state.ts';
 import type { SettingKey } from './levels.ts';
 
 export type ScenarioValues = Pick<
   CityState,
-  'temp' | 'humidity' | 'windSpeed' | 'windDir' | 'aqi' | 'uv' | 'water' | 'land' | 'energy'
+  'temp' | 'humidity' | 'windSpeed' | 'windDir' | 'aqi' | 'uv' | 'water' | 'population' | 'energy'
 >;
 
 export interface Scenario {
@@ -16,12 +16,12 @@ export interface Scenario {
 }
 
 const SCENARIO_KEYS: (keyof ScenarioValues)[] = [
-  'temp', 'humidity', 'windSpeed', 'windDir', 'aqi', 'uv', 'water', 'land', 'energy',
+  'temp', 'humidity', 'windSpeed', 'windDir', 'aqi', 'uv', 'water', 'population', 'energy',
 ];
 
-/** The state patch that loads a scenario. Population is left as it is. */
+/** The state patch that loads a scenario; free land follows from its population. */
 export function applyScenario(sc: Scenario): Partial<CityState> {
-  return { ...sc.values, scenarioId: sc.id };
+  return { ...sc.values, land: freeLand(sc.values.population), scenarioId: sc.id };
 }
 
 /** True while every scenario value is still untouched. */

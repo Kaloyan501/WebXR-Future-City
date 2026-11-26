@@ -1,6 +1,6 @@
 // The settings panel on the right: ten controls that drive the whole page.
-import type { CityState, Store, WindDir } from '../climate/state.ts';
-import { formatSetting, isWarning, levelsOf, type Levels, type SettingKey } from '../climate/levels.ts';
+import { maxHumidity, type CityState, type Store, type WindDir } from '../climate/state.ts';
+import { formatNumber, formatSetting, isWarning, levelsOf, type Levels, type SettingKey } from '../climate/levels.ts';
 import { SLIDER_RANGES, type Scenario } from '../climate/scenarios.ts';
 import { openScenarioPicker } from './scenario-picker.ts';
 
@@ -10,7 +10,8 @@ interface SliderDef {
   key: SliderKey;
   label: string;
   level?: keyof Levels;
-  hint?: string;
+  /** Small text under the slider; a function is re-evaluated on every change (empty hides it). */
+  hint?: (s: CityState) => string;
 }
 
 type Row = SliderDef | 'compass';
@@ -20,7 +21,12 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     title: 'Климат',
     rows: [
       { key: 'temp', label: 'Температура', level: 'temp' },
-      { key: 'humidity', label: 'Влажност', level: 'humidity' },
+      {
+        key: 'humidity',
+        label: 'Влажност',
+        level: 'humidity',
+        hint: (s) => (maxHumidity(s.temp) < 100 ? `При ${formatNumber(s.temp)} °C влажността е най-много ${maxHumidity(s.temp)} %.` : ''),
+      },
       { key: 'windSpeed', label: 'Сила на вятъра', level: 'wind' },
       'compass',
       { key: 'aqi', label: 'Качество на въздуха (AQI)', level: 'aqi' },
@@ -31,13 +37,18 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     title: 'Ресурси',
     rows: [
       { key: 'water', label: 'Налична вода', level: 'water' },
-      { key: 'land', label: 'Свободна земя', level: 'land' },
       { key: 'energy', label: 'Енергия', level: 'energy' },
     ],
   },
   {
     title: 'Население',
-    rows: [{ key: 'population', label: 'Жители', hint: 'Използва се в калкулатора за храна.' }],
+    rows: [
+      {
+        key: 'population',
+        label: 'Жители',
+        hint: (s) => `Повече жители – по-малко свободна земя: сега ${s.land} %. Използва се и в калкулатора за храна.`,
+      },
+    ],
   },
 ];
 
@@ -125,10 +136,9 @@ function buildSlider(def: SliderDef, store: Store, updaters: ((s: CityState, lv:
   input.addEventListener('input', () => store.set({ [def.key]: Number(input.value) }));
 
   wrap.append(top, input);
+  const hint = document.createElement('p');
+  hint.className = 'control-hint';
   if (def.hint) {
-    const hint = document.createElement('p');
-    hint.className = 'control-hint';
-    hint.textContent = def.hint;
     wrap.append(hint);
   }
 
@@ -139,6 +149,10 @@ function buildSlider(def: SliderDef, store: Store, updaters: ((s: CityState, lv:
     input.setAttribute('aria-valuetext', text);
     input.style.setProperty('--fill', `${((v - range.min) / (range.max - range.min)) * 100}%`);
     renderValue(out, text, def.level ? isWarning(def.level, lv) : false);
+    if (def.hint) {
+      hint.textContent = def.hint(s);
+      hint.hidden = hint.textContent === '';
+    }
   });
   return wrap;
 }
