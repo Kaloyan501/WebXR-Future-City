@@ -268,6 +268,21 @@ export function mountClimatePage(opts: {
     { capture: true },
   );
 
+  // The in-page XR emulator (IWER DevUI: dev builds and ?emulateXR=1) pins its "Enter XR" button to
+  // the top centre, over the top bar. It lives in its own shadow DOM, so move it from inside there.
+  const moveEmulatorButton = () => {
+    for (const host of document.body.children) {
+      const root = host.shadowRoot;
+      if (!root || root.getElementById('grad2100-iwer')) continue;
+      const style = document.createElement('style');
+      style.id = 'grad2100-iwer';
+      style.textContent = 'div[style*="left: 50vw"][style*="top: 8px"] { top: 64px !important; }';
+      root.append(style);
+    }
+  };
+  moveEmulatorButton();
+  new MutationObserver(moveEmulatorButton).observe(body, { childList: true });
+
   // Bulgarian text on the three.js VR/AR buttons, which rewrite their own labels.
   const translateXr = () => {
     for (const b of document.querySelectorAll<HTMLElement>('#xr-bar button, #xr-bar a')) {
