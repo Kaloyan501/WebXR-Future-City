@@ -180,6 +180,9 @@ export function mountClimatePage(opts: {
       windSpeed: v.windSpeed,
       cloudiness: Math.min(1, Math.max(0, (v.humidity - 35) / 50)),
       cloudColor: vis.cloudColor,
+      smog: vis.smog,
+      uv: v.uv,
+      energy: v.energy,
     });
   };
   let clock = 0;
@@ -202,7 +205,10 @@ export function mountClimatePage(opts: {
     weather3d.setVR(false);
     reapply();
   });
-  const update = (dt: number) => {
+  const update = (frameDt: number) => {
+    // The render loop's very first delta can be negative (THREE.Timer counts from before the
+    // first frame); time never runs backwards here.
+    const dt = Math.max(0, frameDt);
     clock += dt * 1000;
     const run = queued;
     queued = [];

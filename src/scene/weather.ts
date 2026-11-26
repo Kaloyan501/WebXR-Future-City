@@ -14,16 +14,18 @@ export function applyWeather(look: WeatherLook, t: WeatherTargets): void {
   t.sun.color.set(look.sunColor);
   t.hemi.color.set(look.hemiSky);
 
-  // Haze is tuned for the desktop camera distance; VR gets its own treatment later.
-  if (look.haze < 0.02 || t.inVR) {
+  if (look.haze < 0.02) {
     t.scene.fog = null;
     return;
   }
+  // Desktop distances are tuned for the camera ~69 units away; in VR the model is ~1.3 m away.
+  const near = t.inVR ? 2.4 - 1.6 * look.haze : look.fogNear;
+  const far = t.inVR ? 4.2 - 2.4 * look.haze : look.fogFar;
   if (t.scene.fog instanceof THREE.Fog) {
     t.scene.fog.color.set(look.fogColor);
-    t.scene.fog.near = look.fogNear;
-    t.scene.fog.far = look.fogFar;
+    t.scene.fog.near = near;
+    t.scene.fog.far = far;
   } else {
-    t.scene.fog = new THREE.Fog(look.fogColor, look.fogNear, look.fogFar);
+    t.scene.fog = new THREE.Fog(look.fogColor, near, far);
   }
 }
