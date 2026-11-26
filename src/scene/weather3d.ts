@@ -197,13 +197,16 @@ export function createWeather3D(): Weather3D {
 
   /** Steam rises from the top of each placed model (Kaloyan's power plants). */
   const findEmitters = () => {
-    const placements = group.parent?.getObjectByName('placements');
-    if (!placements || !group.parent) return;
+    let root: THREE.Object3D = group;
+    while (root.parent) root = root.parent;
+    const placements = root.getObjectByName('placements');
+    if (!placements || root === group) return;
+    group.updateWorldMatrix(true, false);
     emitters = placements.children.slice(0, MAX_PLANTS).map((m) => {
       box.setFromObject(m);
       box.getCenter(tmp);
       tmp.y = box.max.y;
-      return group.parent!.worldToLocal(tmp.clone());
+      return group.worldToLocal(tmp.clone());
     });
   };
 

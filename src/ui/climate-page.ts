@@ -3,7 +3,7 @@
 // front of it, and the climate weather on the 3D scene itself. Kaloyan's existing controls
 // (#title, #layers, #scenario, #card) are moved into this layout, never recreated, so initDomUI keeps working.
 import './climate.css';
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import climateScenarios from '../../content/climate-scenarios.json';
 import diseasesData from '../../content/diseases.json';
 import mealsData from '../../content/meals.json';
@@ -22,6 +22,7 @@ import { createTween } from '../climate/tween.ts';
 import { weatherLook } from '../climate/weatherLook.ts';
 import { applyWeather } from '../scene/weather.ts';
 import { createWeather3D } from '../scene/weather3d.ts';
+import { createWaterSystem, type WaterSystem } from '../scene/water.ts';
 import { mountPanel } from './climate-panel.ts';
 import { mountBiologySection } from './sections/biology.ts';
 import { mountCitySection } from './sections/city.ts';
@@ -65,8 +66,10 @@ export interface FreeArea {
 
 export interface ClimatePage {
   store: Store;
-  /** Rain, snow and clouds; add it to the model's world group so it scales in VR. */
+  /** Weather and water on the 3D city; add it to the model's world group so it scales in VR. */
   weather: THREE.Group;
+  /** Sea level (coastline) and reservoirs; Kaloyan's sea-level control calls setSeaLevel. */
+  water: WaterSystem;
   /** Call every frame from the render loop (also runs in VR). */
   update(dt: number): void;
   /** Presentation mode asks for the city to turn slowly (true) or stop (false). */
@@ -168,6 +171,10 @@ export function mountClimatePage(opts: {
   // so it stays in step on the desktop and keeps running inside VR.
   const sky = createSky(bg);
   const weather3d = createWeather3D();
+  const water = createWaterSystem();
+  const effects = new THREE.Group();
+  effects.name = 'climate-effects';
+  effects.add(weather3d.group, water.group);
   const applyLook = (v: ClimateLook) => {
     sky.apply(v);
     const vis = visualsFor(v);
@@ -184,6 +191,7 @@ export function mountClimatePage(opts: {
       uv: v.uv,
       energy: v.energy,
     });
+    water.setAvailability(v.water);
   };
   let clock = 0;
   let queued: ((t: number) => void)[] = [];
@@ -214,6 +222,7 @@ export function mountClimatePage(opts: {
     queued = [];
     for (const cb of run) cb(clock);
     weather3d.update(dt);
+    water.update(dt);
   };
 
   // Bar toggles: the bars slide away (CSS) and the city glides into the freed space, because the
@@ -290,7 +299,8 @@ export function mountClimatePage(opts: {
     store,
     freeArea,
     vrMenu: new ClimateVrMenu(store, scenarios),
-    weather: weather3d.group,
+    weather: effects,
+    water,
     update,
     onRotate: (fn) => {
       rotateListener = fn;

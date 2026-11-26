@@ -178,6 +178,7 @@ async function main(): Promise<void> {
 
   const setScenario = (index: number): void => {
     city.setWaterLevel(content.scenarios[index].waterLevel);
+    page.water.setSeaLevel(content.scenarios[index].waterLevel);
     dom.setScenario(index);
     vr.setScenarioActive(index);
   };
