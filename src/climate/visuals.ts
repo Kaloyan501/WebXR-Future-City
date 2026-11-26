@@ -56,6 +56,25 @@ export function windXOf(dir: WindDir): number {
   }
 }
 
+/**
+ * The full wind direction on the plate: where the wind blows TO, as a unit vector.
+ * East is +x and north is −z, so a north wind (С) blows towards +z.
+ */
+export function windVecOf(dir: WindDir): { x: number; z: number } {
+  const D = Math.round(Math.SQRT1_2 * 100) / 100;
+  switch (dir) {
+    case 'З': return { x: 1, z: 0 };
+    case 'И': return { x: -1, z: 0 };
+    case 'С': return { x: 0, z: 1 };
+    case 'Ю': return { x: 0, z: -1 };
+    case 'СЗ': return { x: D, z: D };
+    case 'СИ': return { x: -D, z: D };
+    case 'ЮЗ': return { x: D, z: -D };
+    case 'ЮИ': return { x: -D, z: -D };
+    default: return { x: 0, z: 0 };
+  }
+}
+
 // Sky colour stops by temperature: cold blue → light blue → warm yellow-orange.
 const SKY_STOPS: { t: number; top: string; bottom: string }[] = [
   { t: -15, top: '#7d93b0', bottom: '#d3dbe6' },

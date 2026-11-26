@@ -18,6 +18,7 @@ import type { MealsData } from '../climate/menu.ts';
 import { createStore, DEFAULT_STATE, type Store } from '../climate/state.ts';
 import type { Scenario } from '../climate/scenarios.ts';
 import { visualsFor } from '../climate/visuals.ts';
+import { createTween } from '../climate/tween.ts';
 import { weatherLook } from '../climate/weatherLook.ts';
 import { applyWeather } from '../scene/weather.ts';
 import { createWeather3D } from '../scene/weather3d.ts';
@@ -31,7 +32,7 @@ import { mountLifestyleSection } from './sections/lifestyle.ts';
 import { mountMenuSection } from './sections/menu.ts';
 import { setupPresentation } from './presentation.ts';
 import { ClimateVrMenu } from './vr-climate-menu.ts';
-import { inputOf, mountSky } from './sky.ts';
+import { createSky, lookOf, type ClimateLook } from './sky.ts';
 
 const SECTIONS: { id: string; title: string }[] = [
   { id: 'city', title: 'Градът' },
@@ -153,6 +154,7 @@ export function mountClimatePage(opts: {
   syncSeaFill();
 
   const citySection = content.querySelector<HTMLElement>('#city')!;
+  const TRANSITION_MS = 800;
   mountCitySection(citySection, store, scenarios);
   const section = (id: string) => content.querySelector<HTMLElement>(`#${id}`)!;
   mountProductionSection(section('production'), store, methodsData as MethodDef[]);
@@ -161,39 +163,52 @@ export function mountClimatePage(opts: {
   mountMenuSection(section('menu'), store, mealsData as MealsData);
   mountNumbersSection(section('numbers'), store);
   mountLifestyleSection(content.querySelector<HTMLElement>('#lifestyle')!, store, diseasesData as DiseaseDef[], reducedMotion);
-  mountSky(bg, store, { reducedMotion });
-
-  // Rain, snow and clouds over the 3D city (also in VR).
+  // One shared transition for everything the climate changes on screen: the sky colour, the 3D
+  // sunlight and haze, and rain, snow and clouds. It is driven by the 3D render loop (update(dt)),
+  // so it stays in step on the desktop and keeps running inside VR.
+  const sky = createSky(bg);
   const weather3d = createWeather3D();
-  const applyWeather3d = () => {
-    const s = store.get();
-    const v = visualsFor(inputOf(s));
+  const applyLook = (v: ClimateLook) => {
+    sky.apply(v);
+    const vis = visualsFor(v);
+    applyWeather(weatherLook(vis, v), { scene: opts.scene, sun: opts.sun, hemi: opts.hemi, inVR: opts.renderer.xr.isPresenting });
     weather3d.set({
-      rain: reducedMotion ? 0 : v.rain,
-      snow: reducedMotion ? 0 : v.snowfall,
-      windX: inputOf(s).windX,
-      windSpeed: s.windSpeed,
-      cloudiness: Math.min(1, Math.max(0, (s.humidity - 35) / 50)),
-      cloudColor: v.cloudColor,
+      rain: reducedMotion ? 0 : vis.rain,
+      snow: reducedMotion ? 0 : vis.snowfall,
+      windX: v.windX,
+      windZ: v.windZ,
+      windSpeed: v.windSpeed,
+      cloudiness: Math.min(1, Math.max(0, (v.humidity - 35) / 50)),
+      cloudColor: vis.cloudColor,
     });
   };
-  store.subscribe(applyWeather3d);
-  opts.renderer.xr.addEventListener('sessionstart', () => weather3d.setVR(true));
-  opts.renderer.xr.addEventListener('sessionend', () => weather3d.setVR(false));
-
-  // Climate weather on the 3D scene (sunlight, haze); re-applied when entering or leaving VR.
-  const applyScene = () => {
-    const s = store.get();
-    applyWeather(weatherLook(visualsFor(inputOf(s)), s), {
-      scene: opts.scene,
-      sun: opts.sun,
-      hemi: opts.hemi,
-      inVR: opts.renderer.xr.isPresenting,
-    });
+  let clock = 0;
+  let queued: ((t: number) => void)[] = [];
+  const transition = createTween(
+    lookOf(store.get()),
+    TRANSITION_MS,
+    applyLook,
+    (cb) => queued.push(cb),
+    () => clock,
+  );
+  transition.snap(lookOf(store.get()));
+  store.subscribe((s) => (reducedMotion ? transition.snap(lookOf(s)) : transition.to(lookOf(s))));
+  const reapply = () => applyLook(transition.current());
+  opts.renderer.xr.addEventListener('sessionstart', () => {
+    weather3d.setVR(true);
+    reapply();
+  });
+  opts.renderer.xr.addEventListener('sessionend', () => {
+    weather3d.setVR(false);
+    reapply();
+  });
+  const update = (dt: number) => {
+    clock += dt * 1000;
+    const run = queued;
+    queued = [];
+    for (const cb of run) cb(clock);
+    weather3d.update(dt);
   };
-  store.subscribe(applyScene);
-  opts.renderer.xr.addEventListener('sessionstart', applyScene);
-  opts.renderer.xr.addEventListener('sessionend', applyScene);
 
   // Bar toggles: the bars slide away (CSS) and the city glides into the freed space, because the
   // 3D view is re-fitted on every frame of the slide from the bars' live positions.
@@ -270,7 +285,7 @@ export function mountClimatePage(opts: {
     freeArea,
     vrMenu: new ClimateVrMenu(store, scenarios),
     weather: weather3d.group,
-    update: (dt) => weather3d.update(dt),
+    update,
     onRotate: (fn) => {
       rotateListener = fn;
     },

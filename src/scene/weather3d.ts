@@ -8,8 +8,9 @@ export interface WeatherTargets {
   rain: number;
   /** 0..1 */
   snow: number;
-  /** −1..1, horizontal wind component (east is +x). */
+  /** Where the wind blows to, as a unit vector on the plate (east is +x, north is −z). */
   windX: number;
+  windZ: number;
   windSpeed: number;
   /** 0..1, how many clouds. */
   cloudiness: number;
@@ -81,7 +82,7 @@ export function createWeather3D(): Weather3D {
 
   group.add(rain, snow);
 
-  let target: WeatherTargets = { rain: 0, snow: 0, windX: 0, windSpeed: 0, cloudiness: 0, cloudColor: '#ffffff' };
+  let target: WeatherTargets = { rain: 0, snow: 0, windX: 0, windZ: 0, windSpeed: 0, cloudiness: 0, cloudColor: '#ffffff' };
   let rainCount = 0;
   let snowCount = 0;
 

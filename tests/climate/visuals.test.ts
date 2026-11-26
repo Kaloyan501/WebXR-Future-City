@@ -122,3 +122,16 @@ test('rain greys the sky and darkens clouds', () => {
   assert.notEqual(storm.cloudColor, '#ffffff');
   assert.ok(storm.sunGlow < dry.sunGlow);
 });
+
+test('wind blows away from the compass direction it comes from (east = +x, north = −z)', async () => {
+  const { windVecOf } = await import('../../src/climate/visuals.ts');
+  const r = (v: { x: number; z: number }) => ({ x: Math.round(v.x * 100) / 100 + 0, z: Math.round(v.z * 100) / 100 + 0 });
+  assert.deepEqual(r(windVecOf('З')), { x: 1, z: 0 });
+  assert.deepEqual(r(windVecOf('И')), { x: -1, z: 0 });
+  assert.deepEqual(r(windVecOf('С')), { x: 0, z: 1 });
+  assert.deepEqual(r(windVecOf('Ю')), { x: 0, z: -1 });
+  assert.deepEqual(r(windVecOf('СЗ')), { x: 0.71, z: 0.71 });
+  assert.deepEqual(r(windVecOf('ЮИ')), { x: -0.71, z: -0.71 });
+  assert.deepEqual(r(windVecOf(null)), { x: 0, z: 0 });
+  assert.equal(windVecOf('ЮЗ').x, windXOf('ЮЗ'), 'x matches the old horizontal component');
+});
